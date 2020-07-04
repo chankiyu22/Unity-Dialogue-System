@@ -1,0 +1,24 @@
+{
+    "name": "com.chankiyu22.unity-dialogue-system",
+    "displayName": "Unity Dialogue System",
+    "version": "0.0.1",
+    "unity": "2018.3",
+    "description": "",
+    "keywords": [
+        "unity",
+        "dialogue"
+    ],
+    "category": "Unity",
+    "files": [
+        "/package.json",
+        "/package.json.meta",
+        "/src",
+        "/src.meta",
+        "/src/DialogueSystem.asmdef",
+        "/src/DialogueSystem.asmdef.meta"
+    ],
+    "author": {
+        "name": "chankiyu22",
+        "email": "chankiyu22@gmail.com"
+    }
+}
