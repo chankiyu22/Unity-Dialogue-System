@@ -1,9 +1,6 @@
 {
-    "name": "DialogueSystem",
-    "references": [
-        "Character",
-        "Avatar"
-    ],
+    "name": "Character",
+    "references": [],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
