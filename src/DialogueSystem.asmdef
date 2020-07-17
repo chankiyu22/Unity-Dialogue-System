@@ -1,3 +1,14 @@
-﻿{
-	"name": "DialogueSystem"
+{
+    "name": "DialogueSystem",
+    "references": [
+        "Character"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }
