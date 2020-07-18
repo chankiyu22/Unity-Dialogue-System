@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEditor;
 
+using Chankiyu22.DialogueSystem.Avatars;
+
 namespace Chankiyu22.DialogueSystem
 {
 
@@ -23,7 +25,15 @@ class PlotItemPropertyDrawer : PropertyDrawer
         Rect dialogueTextPropRect = new Rect(position.x + 72, position.y, position.width - 72, EditorGUIUtility.singleLineHeight);
         Rect dialogueTextPreviewRect = new Rect(position.x + 72, position.y  + EditorGUIUtility.singleLineHeight + 2, position.width - 72, position.height - EditorGUIUtility.singleLineHeight * 2 - 8);
 
-        EditorGUI.DrawRect(avatarTexturePreviewRect, Color.blue);
+        EditorGUI.DrawRect(avatarTexturePreviewRect, Color.grey);
+        AvatarTextureSource avatarTextureSource = (AvatarTextureSource) avatarTextureSourceProp.objectReferenceValue;
+        if (avatarTextureSource == null || avatarTextureSource.GetPreviewTexture() == null)
+        {
+        }
+        else
+        {
+            EditorGUI.DrawPreviewTexture(avatarTexturePreviewRect, avatarTextureSource.GetPreviewTexture(), null, ScaleMode.ScaleToFit);
+        }
         EditorGUI.PropertyField(avatarTextureSourcePropRect, avatarTextureSourceProp, GUIContent.none);
         EditorGUI.PropertyField(characterPropRect, characterProp, GUIContent.none);
         EditorGUI.PropertyField(dialogueTextPropRect, dialogueTextProp, GUIContent.none);
