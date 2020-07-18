@@ -21,13 +21,12 @@ public class DialogueEditorWindow : EditorWindow
 
     void OnGUI()
     {
-        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height));
-        EditorGUI.BeginDisabledGroup(true);
-        EditorGUILayout.ObjectField("Editing Dialogue", m_dialogue, typeof(Dialogue), false);
-        EditorGUI.EndDisabledGroup();
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
-        EditorGUILayout.Space();
+        using (new EditorGUI.DisabledScope(true))
+        {
+            EditorGUILayout.ObjectField(m_dialogue, typeof(Dialogue), false);
+        }
+
+        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height - EditorGUIUtility.singleLineHeight - 2));
         m_dialogueEditor.OnInspectorGUI();
         EditorGUILayout.Space();
         EditorGUILayout.EndScrollView();
