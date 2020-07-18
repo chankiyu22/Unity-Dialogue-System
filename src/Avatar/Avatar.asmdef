@@ -1,8 +1,6 @@
 {
     "name": "Avatar",
-    "references": [
-        "DialogueSystem"
-    ],
+    "references": [],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],

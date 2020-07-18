@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Chankiyu22.DialogueSystem.Characters;
+using Chankiyu22.DialogueSystem.Avatars;
 
 namespace Chankiyu22.DialogueSystem
 {
@@ -24,6 +25,11 @@ public class PlotController : MonoBehaviour
 
     public event EventHandler<CharacterEventArgs> OnCharacter;
 
+    [SerializeField]
+    private AvatarTextureSourceUnityEvent m_OnAvatarTextureSource = null;
+
+    public event EventHandler<AvatarTextureSourceEventArgs> OnAvatarTextureSource;
+
     void Awake()
     {
         m_map.Clear();
@@ -40,6 +46,7 @@ public class PlotController : MonoBehaviour
             PlotItem plotItem = m_map[dialogueText];
             EmitDialogueText(plotItem.dialogueText);
             EmitCharacter(plotItem.character);
+            EmitAvatarTextureSource(plotItem.avatarTextureSource);
         }
     }
 
@@ -61,6 +68,17 @@ public class PlotController : MonoBehaviour
         {
             OnCharacter.Invoke(this, new CharacterEventArgs() {
                 character = character
+            });
+        }
+    }
+
+    void EmitAvatarTextureSource(AvatarTextureSource avatarTextureSource)
+    {
+        m_OnAvatarTextureSource.Invoke(avatarTextureSource);
+        if (OnAvatarTextureSource != null)
+        {
+            OnAvatarTextureSource.Invoke(this, new AvatarTextureSourceEventArgs() {
+                avatarTextureSource = avatarTextureSource
             });
         }
     }

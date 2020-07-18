@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Chankiyu22.DialogueSystem.Characters;
+using Chankiyu22.DialogueSystem.Avatars;
 
 namespace Chankiyu22.DialogueSystem
 {
@@ -39,6 +40,22 @@ public class PlotItem
         set
         {
             m_character = value;
+        }
+    }
+
+    [SerializeField]
+    private AvatarTextureSource m_avatarTextureSource = null;
+
+    public AvatarTextureSource avatarTextureSource
+    {
+        get
+        {
+            return m_avatarTextureSource;
+        }
+
+        set
+        {
+            m_avatarTextureSource = value;
         }
     }
 }

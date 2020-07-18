@@ -1,15 +1,15 @@
 using System;
 using UnityEngine.Events;
 
-namespace Chankiyu22.DialogueSystem.Avatar
+namespace Chankiyu22.DialogueSystem.Avatars
 {
 
 [Serializable]
-public class TextureSourceUnityEvent : UnityEvent<TextureSourceController> {}
+public class AvatarTextureSourceUnityEvent : UnityEvent<AvatarTextureSource> {}
 
-public class TextureSourceEventArgs : EventArgs
+public class AvatarTextureSourceEventArgs : EventArgs
 {
-    public TextureSourceController textureSourceController;
+    public AvatarTextureSource avatarTextureSource;
 }
 
 }

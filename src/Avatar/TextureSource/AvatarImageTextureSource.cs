@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Chankiyu22.DialogueSystem.Avatar
+namespace Chankiyu22.DialogueSystem.Avatars
 {
 
 [RequireComponent(typeof(Image))]
-public class ImageTextureSourceController : TextureSourceController
+public class AvatarImageTextureSource : AvatarTextureSource
 {
     private Image m_image = null;
 
