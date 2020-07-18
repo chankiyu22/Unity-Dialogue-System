@@ -55,6 +55,7 @@ public class DialogueEditor : Editor
         dialogueNodeReorderableList.elementHeightCallback = GetDialogueNodeElementHeight;
         dialogueNodeReorderableList.onAddDropdownCallback = AddDropdown;
         dialogueNodeReorderableList.onRemoveCallback = RemoveDialogueNodeElement;
+        dialogueNodeReorderableList.drawHeaderCallback = DrawDialogueNodeListHeader;
     }
 
     public override void OnInspectorGUI()
@@ -79,6 +80,11 @@ public class DialogueEditor : Editor
         EditorGUI.EndProperty();
     }
 
+    void DrawDialogueNodeListHeader(Rect rect)
+    {
+        EditorGUI.LabelField(rect, "Dialogue Items");
+    }
+
     void DrawDialogueNodeElement(Rect rect, int index, bool isActive, bool isFocus)
     {
         // Handle delete intermediate elements by code
@@ -98,7 +104,7 @@ public class DialogueEditor : Editor
 
         rect.y += 2;
 
-        Rect dialogueTextRowColumn1Rect = new Rect(rect.x, rect.y, rect.width - 160, DialogueTextRefFieldHeight);
+        Rect dialogueTextRowColumn1Rect = new Rect(rect.x, rect.y, rect.width - 155, DialogueTextRefFieldHeight);
         Rect dialogueTextRowColumn2Rect = new Rect(rect.xMax - 60 - 90, rect.y, 90, DialogueTextRefFieldHeight);
         Rect dialogueTextRowColumn3Rect = new Rect(rect.xMax - 60, rect.y, 60, DialogueTextRefFieldHeight);
 
@@ -108,7 +114,7 @@ public class DialogueEditor : Editor
         {
             Color originalBackgroundColor = GUI.backgroundColor;
             GUI.backgroundColor = Color.yellow;
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width - 210, DialogueTextRefFieldHeight), dialogueTextProp, GUIContent.none);
+            EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width - 205, DialogueTextRefFieldHeight), dialogueTextProp, GUIContent.none);
             GUI.backgroundColor = originalBackgroundColor;
             EditorGUI.BeginDisabledGroup(true);
             GUI.Button(new Rect(rect.xMax - 60 - 90 - 50, rect.y, 50, DialogueTextRefFieldHeight), "Unused", EditorStyles.miniButtonLeft);
@@ -182,7 +188,7 @@ public class DialogueEditor : Editor
             DialogueText nextDialogueText = (DialogueText) nextDialogueTextProp.objectReferenceValue;
 
             EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
-            DrawDialogueTextLinkageRow(new Rect(rect.x + 20, rect.y, rect.width - 20, DialogueTextRefFieldHeight), nextDialogueTextProp, 20.0f, new GUIContent("\u2198"));
+            DrawDialogueTextLinkageRow(new Rect(rect.x + 24, rect.y, rect.width - 24, DialogueTextRefFieldHeight), nextDialogueTextProp, 20.0f, new GUIContent("\u2198"));
 
             rect.y += DialogueTextRefFieldHeight;
         }
@@ -232,7 +238,7 @@ public class DialogueEditor : Editor
                 rect.y += 2;
 
                 EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
-                DrawDialogueTextLinkageRow(new Rect(rect.x + 40, rect.y, rect.width - 40, DialogueTextRefFieldHeight), optionNextProp, 20.0f, new GUIContent("\u2198"));
+                DrawDialogueTextLinkageRow(new Rect(rect.x + 44, rect.y, rect.width - 44, DialogueTextRefFieldHeight), optionNextProp, 20.0f, new GUIContent("\u2198"));
 
                 rect.y += DialogueTextRefFieldHeight;
 
@@ -329,7 +335,7 @@ public class DialogueEditor : Editor
         {
             Color prevBackgroundColor = GUI.backgroundColor;
             GUI.backgroundColor = Color.yellow;
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width - 160, rect.height), property, label);
+            EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width - 155, rect.height), property, label);
             GUI.backgroundColor = prevBackgroundColor;
             EditorGUI.BeginDisabledGroup(true);
             GUI.Button(new Rect(rect.xMax - 60 - 90, rect.y, 90, rect.height), "Undefined", EditorStyles.miniButtonLeft);
@@ -337,7 +343,7 @@ public class DialogueEditor : Editor
         }
         else
         {
-            EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width - 70, rect.height), property, label);
+            EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width - 65, rect.height), property, label);
         }
 
         GUIStyle rightButtonStyle = isUndefined ? EditorStyles.miniButtonRight : EditorStyles.miniButton;
