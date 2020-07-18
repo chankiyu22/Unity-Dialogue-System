@@ -5,6 +5,14 @@ namespace Chankiyu22.DialogueSystem.Characters
 {
 
 [Serializable]
+public class CharacterUnityEvent : UnityEvent<Character> {}
+
+public class CharacterEventArgs : EventArgs
+{
+    public Character character;
+}
+
+[Serializable]
 public class IntUnityEvent : UnityEvent<int> {}
 
 public class IntEventArgs : EventArgs

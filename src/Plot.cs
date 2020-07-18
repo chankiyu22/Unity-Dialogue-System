@@ -19,6 +19,11 @@ public class PlotItem
         {
             return m_dialogueText;
         }
+
+        set
+        {
+            m_dialogueText = value;
+        }
     }
 
     [SerializeField]
@@ -29,6 +34,11 @@ public class PlotItem
         get
         {
             return m_character;
+        }
+
+        set
+        {
+            m_character = value;
         }
     }
 }
@@ -41,6 +51,14 @@ public class Plot : ScriptableObject
 
     [SerializeField]
     private List<PlotItem> m_plotItems = new List<PlotItem>();
+
+    public List<PlotItem> plotItems
+    {
+        get
+        {
+            return m_plotItems;
+        }
+    }
 }
 
 }

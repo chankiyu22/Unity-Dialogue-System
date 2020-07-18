@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
@@ -36,7 +37,11 @@ public class PlotEditor : Editor
         EditorGUI.PropertyField(dialoguePropRect, dialogueProp, GUIContent.none);
         using (new EditorGUI.DisabledScope(dialogue == null))
         {
-            GUI.Button(syncDialogueButtonRect, "Sync", EditorStyles.miniButton);
+            if (GUI.Button(syncDialogueButtonRect, "Sync", EditorStyles.miniButton))
+            {
+                SyncPlotWithDialogue((Plot) target, dialogue);
+                serializedObject.Update();
+            }
         }
 
         EditorGUILayout.Space();
@@ -74,7 +79,6 @@ public class PlotEditor : Editor
         SerializedProperty element = l.serializedProperty.GetArrayElementAtIndex(index);
         element.FindPropertyRelative("m_dialogueText").objectReferenceValue = null;
         element.FindPropertyRelative("m_character").objectReferenceValue = null;
-
     }
 
     void RemoveElement(ReorderableList l)
@@ -82,6 +86,36 @@ public class PlotEditor : Editor
         if (EditorUtility.DisplayDialog("Delete Plot Item", "Are you sure you want to delete?", "Yes", "No"))
         {
             ReorderableList.defaultBehaviours.DoRemoveButton(l);
+        }
+    }
+
+    void SyncPlotWithDialogue(Plot plot, Dialogue dialogue)
+    {
+        Dictionary<DialogueText, PlotItem> dialogueTextPlotItemMap = new Dictionary<DialogueText, PlotItem>();
+
+        foreach (PlotItem plotItem in plot.plotItems)
+        {
+            if (plotItem.dialogueText != null && !dialogueTextPlotItemMap.ContainsKey(plotItem.dialogueText))
+            {
+                dialogueTextPlotItemMap.Add(plotItem.dialogueText, plotItem);
+            }
+        }
+
+        plot.plotItems.Clear();
+
+        List<DialogueText> dialogueTexts = dialogue.GetDialogueTexts();
+        foreach (DialogueText dialogueText in dialogueTexts)
+        {
+            if (dialogueTextPlotItemMap.ContainsKey(dialogueText))
+            {
+                plot.plotItems.Add(dialogueTextPlotItemMap[dialogueText]);
+            }
+            else
+            {
+                plot.plotItems.Add(new PlotItem() {
+                    dialogueText = dialogueText
+                });
+            }
         }
     }
 }

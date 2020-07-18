@@ -173,6 +173,19 @@ public class Dialogue : ScriptableObject
 
         return (undefinedDialogueTexts, unusedDialoguedTexts);
     }
+
+    public List<DialogueText> GetDialogueTexts()
+    {
+        List<DialogueText> results = new List<DialogueText>();
+        foreach (DialogueNode dialogueNode in m_dialogueNodes)
+        {
+            if (dialogueNode.dialogueText != null && !results.Contains(dialogueNode.dialogueText))
+            {
+                results.Add(dialogueNode.dialogueText);
+            }
+        }
+        return results;
+    }
 }
 
 }
