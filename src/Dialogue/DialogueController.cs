@@ -73,6 +73,7 @@ public class DialogueController : MonoBehaviour
             return;
         }
         m_currentDialogueController = this;
+        m_dialogue.InitializeVariableValues();
         EmitDialogueBegin(m_dialogue);
     }
 
@@ -81,16 +82,20 @@ public class DialogueController : MonoBehaviour
     //       Add method StartText and EndText to emit text begin and end events.
     public void StartText()
     {
-        m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == m_dialogue.beginText);
-        if (m_currentDialogueNode != null)
+        DialogueText beginText = m_dialogue.GetBeginText();
+        if (beginText == null)
         {
-            EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
+            Debug.LogWarning("No begin dialogue text found", this);
+            EndDialogue();
+            return;
         }
-        else
+        m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == beginText);
+        if (m_currentDialogueNode == null)
         {
             Debug.LogWarning("No begin dialogue text found", this);
             EndDialogue();
         }
+        EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
 
     public void Next()
@@ -98,16 +103,31 @@ public class DialogueController : MonoBehaviour
         if (m_currentDialogueNode != null)
         {
             EmitDialogueTextEnd(m_currentDialogueNode.dialogueText);
-            switch (m_currentDialogueNode.nextOption) {
-                case DialogueNextOption.END:
+            m_dialogue.ApplyVariableValues(m_currentDialogueNode.assignments);
+            if (m_currentDialogueNode.options.Count > 0)
+            {
+                List<DialogueOption> dialogueOptions = m_currentDialogueNode.options;
+                if (dialogueOptions.Count == 0)
                 {
-                    m_currentDialogueNode = null;
+                    Debug.LogWarning("Next is options but no options found", this);
                     EndDialogue();
-                    break;
                 }
-                case DialogueNextOption.DIALOGUE_TEXT:
+                else
                 {
-                    m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == m_currentDialogueNode.next);
+                    EmitDialogueOptionsBegin(dialogueOptions);
+                }
+            }
+            else
+            {
+                DialogueText nextDialogueText = m_currentDialogueNode.GetNextDialogueText(m_dialogue.variableValues);
+                if (nextDialogueText == null)
+                {
+                    Debug.LogWarning("No next dialogue text evaluated valid", this);
+                    EndDialogue();
+                }
+                else
+                {
+                    m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == nextDialogueText);
                     if (m_currentDialogueNode == null)
                     {
                         Debug.LogWarning("Next is dialogue text but no dialogue text found", this);
@@ -117,25 +137,6 @@ public class DialogueController : MonoBehaviour
                     {
                         EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
                     }
-                    break;
-                }
-                case DialogueNextOption.DIALOGUE_OPTIONS:
-                {
-                    List<DialogueOption> dialogueOptions = m_currentDialogueNode.options;
-                    if (dialogueOptions.Count == 0)
-                    {
-                        Debug.LogWarning("Next is options but no options found", this);
-                        EndDialogue();
-                    }
-                    else
-                    {
-                        EmitDialogueOptionsBegin(dialogueOptions);
-                    }
-                    break;
-                }
-                default:
-                {
-                    break;
                 }
             }
         }
@@ -149,7 +150,7 @@ public class DialogueController : MonoBehaviour
             return;
         }
 
-        if (m_currentDialogueNode.nextOption != DialogueNextOption.DIALOGUE_OPTIONS)
+        if (m_currentDialogueNode.options.Count == 0)
         {
             Debug.LogWarning("The current dialogue is not proceeding to options", this);
             return;
@@ -165,7 +166,17 @@ public class DialogueController : MonoBehaviour
             return;
         }
 
-        DialogueNode dialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == selectedOption.next);
+        EmitDialogueOptionsEnd(dialogueOptions);
+        m_dialogue.ApplyVariableValues(selectedOption.assignments);
+
+        DialogueText nextDialogueText = m_currentDialogueNode.GetNextDialogueText(m_dialogue.variableValues);
+        if (nextDialogueText == null)
+        {
+            Debug.LogWarning("No next dialogue text evaluated valid", this);
+            EndDialogue();
+        }
+
+        DialogueNode dialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == nextDialogueText);
 
         if (dialogueNode == null)
         {
@@ -174,7 +185,6 @@ public class DialogueController : MonoBehaviour
         }
 
         m_currentDialogueNode = dialogueNode;
-        EmitDialogueOptionsEnd(dialogueOptions);
         EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
 

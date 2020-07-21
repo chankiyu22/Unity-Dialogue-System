@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -12,8 +13,16 @@ public class DialogueEditor : Editor
     SerializedProperty dialogueNodesProp;
     ReorderableList dialogueNodeReorderableList;
 
+    List<ReorderableList> dialogueNodeVariableAssignmentReorderableLists = new List<ReorderableList>();
+
+    DialogueVariableReorderableList dialogueVariableReorderableList;
+
     List<DialogueText> m_undefinedDialogueTexts = new List<DialogueText>();
     List<DialogueText> m_unusedDialogueTexts = new List<DialogueText>();
+
+    VariableAssignmentListPropertyDrawerManager variableAssignmentListPropertyDrawerManager = new VariableAssignmentListPropertyDrawerManager();
+    ConditionReorderableListManager conditionReorderableListManager = new ConditionReorderableListManager();
+    DialogueNodeNextListPropertyDrawer m_dialogueNodeNextListPropertyDrawer;
 
     float DialogueTextRefFieldHeight
     {
@@ -28,14 +37,6 @@ public class DialogueEditor : Editor
         get
         {
             return EditorGUIUtility.singleLineHeight * 3;
-        }
-    }
-
-    float NextOptionFieldHeight
-    {
-        get
-        {
-            return EditorGUIUtility.singleLineHeight;
         }
     }
 
@@ -56,6 +57,11 @@ public class DialogueEditor : Editor
         dialogueNodeReorderableList.onAddDropdownCallback = AddDropdown;
         dialogueNodeReorderableList.onRemoveCallback = RemoveDialogueNodeElement;
         dialogueNodeReorderableList.drawHeaderCallback = DrawDialogueNodeListHeader;
+
+        m_dialogueNodeNextListPropertyDrawer = new DialogueNodeNextListPropertyDrawer(conditionReorderableListManager, DrawDialogueTextLinkageRow);
+
+        SerializedProperty dialogueVariableListProp = serializedObject.FindProperty("m_dialogueVariables");
+        dialogueVariableReorderableList = new DialogueVariableReorderableList(serializedObject, dialogueVariableListProp);
     }
 
     public override void OnInspectorGUI()
@@ -65,20 +71,26 @@ public class DialogueEditor : Editor
         (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialogueTexts) = dialogue.GetUnreferencedDialoguedTextAndUnusedNodes();
         m_undefinedDialogueTexts = undefinedDialogueTexts;
         m_unusedDialogueTexts = unusedDialogueTexts;
-        DrawBeginTextField();
+
+        SerializedProperty dialogueVariableListProp = serializedObject.FindProperty("m_dialogueVariables");
+        dialogueVariableReorderableList.DoLayoutList();
+
+        SerializedProperty beginTextsProp = serializedObject.FindProperty("m_beginTexts");
+        SerializedProperty finalBeginTextProp = serializedObject.FindProperty("m_finalBeginText");
+        float beginTextsHeight = m_dialogueNodeNextListPropertyDrawer.GetHeight(beginTextsProp);
+        Rect beginTextsRect = EditorGUILayout.GetControlRect(false, beginTextsHeight);
+        m_dialogueNodeNextListPropertyDrawer.DrawDialogueNodeNexts(
+            beginTextsRect,
+            beginTextsProp,
+            finalBeginTextProp,
+            "Begin Texts");
+
+        EditorGUILayout.Space();
+
         dialogueNodeReorderableList.DoLayoutList();
         serializedObject.ApplyModifiedProperties();
     }
 
-    void DrawBeginTextField()
-    {
-        SerializedProperty beginTextProp = serializedObject.FindProperty("m_beginText");
-        DialogueText beginText = (DialogueText) beginTextProp.objectReferenceValue;
-        Rect rect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight);
-        EditorGUI.BeginProperty(rect, new GUIContent("Begin Text"), beginTextProp);
-        DrawDialogueTextLinkageRow(new Rect(rect.x, rect.y, rect.width, rect.height), beginTextProp, EditorGUIUtility.labelWidth, new GUIContent("Begin Text"));
-        EditorGUI.EndProperty();
-    }
 
     void DrawDialogueNodeListHeader(Rect rect)
     {
@@ -95,12 +107,11 @@ public class DialogueEditor : Editor
 
         float prevLabelWidth = EditorGUIUtility.labelWidth;
 
-        SerializedProperty beginTextProp = serializedObject.FindProperty("m_beginText");
-        DialogueText beginText = (DialogueText) beginTextProp.objectReferenceValue;
+        SerializedProperty finalBeginTextProp = serializedObject.FindProperty("m_finalBeginText");
+        DialogueText finalBeginText = (DialogueText) finalBeginTextProp.objectReferenceValue;
         SerializedProperty dialogueNodeProp = dialogueNodeReorderableList.serializedProperty.GetArrayElementAtIndex(index);
         SerializedProperty dialogueTextProp = dialogueNodeProp.FindPropertyRelative("m_dialogueText");
         DialogueText dialogueText = (DialogueText) dialogueTextProp.objectReferenceValue;
-        SerializedProperty nextOptionProp = dialogueNodeProp.FindPropertyRelative("m_nextOption");
 
         rect.y += 2;
 
@@ -125,11 +136,11 @@ public class DialogueEditor : Editor
             EditorGUI.PropertyField(dialogueTextRowColumn1Rect, dialogueTextProp, GUIContent.none);
         }
         if (dialogueText != null) {
-            bool isBeginText = dialogueText == beginText;
+            bool isBeginText = dialogueText == finalBeginText;
             EditorGUI.BeginDisabledGroup(isBeginText);
             if (GUI.Button(dialogueTextRowColumn2Rect, isBeginText ? "Begin Text" : "As Begin Text", isUnused ? EditorStyles.miniButtonMid : EditorStyles.miniButtonLeft))
             {
-                beginTextProp.objectReferenceValue = dialogueText;
+                finalBeginTextProp.objectReferenceValue = dialogueText;
             }
             EditorGUI.EndDisabledGroup();
             if (GUI.Button(dialogueTextRowColumn3Rect, "De|ete", EditorStyles.miniButtonRight))
@@ -174,151 +185,108 @@ public class DialogueEditor : Editor
 
         rect.y += 2;
 
-        DialogueNextOption nextOption = (DialogueNextOption) nextOptionProp.intValue;
+        SerializedProperty assignmentsProp = dialogueNodeProp.FindPropertyRelative("m_assignments");
+        VariableAssignmentListReorderableList dialogueNodeVariableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(assignmentsProp);
+        float dialogueNodeVariableAssignmentListReorderableListHeight = dialogueNodeVariableAssignmentListReorderableList.GetHeight();
+        Rect dialogueNodeVariableAssignmentListReorderableListRect = new Rect(rect.x, rect.y, rect.width, dialogueNodeVariableAssignmentListReorderableListHeight);
+        dialogueNodeVariableAssignmentListReorderableList.DoList(dialogueNodeVariableAssignmentListReorderableListRect);
 
-        DrawDialogueNextOptionRow(new Rect(rect.x, rect.y, rect.width, NextOptionFieldHeight), nextOptionProp);
-
-        rect.y += NextOptionFieldHeight;
+        rect.y += dialogueNodeVariableAssignmentListReorderableListHeight;
 
         rect.y += 2;
 
-        if (nextOption == DialogueNextOption.DIALOGUE_TEXT)
-        {
-            SerializedProperty nextDialogueTextProp = dialogueNodeProp.FindPropertyRelative("m_next");
-            DialogueText nextDialogueText = (DialogueText) nextDialogueTextProp.objectReferenceValue;
+        GUIStyle optionsHeaderStyle = new GUIStyle();
+        optionsHeaderStyle.normal.background = new Texture2D(1, 1);
+        optionsHeaderStyle.padding = EditorStyles.miniButtonLeft.padding;
+        optionsHeaderStyle.alignment = TextAnchor.MiddleLeft;
+        optionsHeaderStyle.normal.background.SetPixels(new Color[]{ new Color(0.3f, 0.3f, 0.3f) });
+        optionsHeaderStyle.normal.background.Apply();
+        optionsHeaderStyle.normal.textColor = Color.white;
+        Rect optionsHeaderRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
+        GUI.Label(optionsHeaderRect, "Options", optionsHeaderStyle);
 
+        rect.y += optionsHeaderRect.height;
+        rect.y += 2;
+
+        SerializedProperty nextDialogueOptionsProp = dialogueNodeProp.FindPropertyRelative("m_options");
+
+        for (int i = 0; i < nextDialogueOptionsProp.arraySize; i++)
+        {
+            SerializedProperty nextDialogueOptionProp = nextDialogueOptionsProp.GetArrayElementAtIndex(i);
+            SerializedProperty optionTextProp = nextDialogueOptionProp.FindPropertyRelative("m_dialogueOptionText");
+            DialogueOptionText optionText = (DialogueOptionText) optionTextProp.objectReferenceValue;
+
+            EditorGUIUtility.labelWidth = 20.0f;
             EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
-            DrawDialogueTextLinkageRow(new Rect(rect.x + 24, rect.y, rect.width - 24, DialogueTextRefFieldHeight), nextDialogueTextProp, 20.0f, new GUIContent("\u2198"));
+            EditorGUI.PropertyField(new Rect(rect.x + 20, rect.y, 100, DialogueTextRefFieldHeight), optionTextProp, new GUIContent("\u2192"));
+            if (optionText)
+            {
+                optionText.text = EditorGUI.TextField(new Rect(rect.x + 120, rect.y, rect.width - 180, DialogueTextRefFieldHeight), optionText.text);
+                EditorUtility.SetDirty(optionText);
+            } else {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUI.TextField(new Rect(rect.x + 120, rect.y, rect.width - 280, DialogueTextRefFieldHeight), "");
+                EditorGUI.EndDisabledGroup();
+                if (GUI.Button(new Rect(rect.xMax - 60 - 100, rect.y, 100, DialogueTextRefFieldHeight), "New Option Text", EditorStyles.miniButtonMid))
+                {
+                    DialogueOptionText newOptionText = PromptToCreate<DialogueOptionText>("New Dialogue Option Text", "Dialogue Option Text");
+                    if (newOptionText != null)
+                    {
+                        optionTextProp.objectReferenceValue = newOptionText;
+                    }
+                }
+            }
+            if (GUI.Button(new Rect(rect.xMax - 60, rect.y, 60, DialogueTextRefFieldHeight), "De|ete", EditorStyles.miniButtonRight))
+            {
+                if (EditorUtility.DisplayDialog("Delete Option", "Are you sure you want to delete?", "Yes", "No"))
+                {
+                    DeleteOption(nextDialogueOptionsProp, i);
+                    return;
+                }
+            }
 
             rect.y += DialogueTextRefFieldHeight;
+
+            rect.y += 2;
+
+            SerializedProperty optionAssignmentsProp = nextDialogueOptionProp.FindPropertyRelative("m_assignments");
+            VariableAssignmentListReorderableList optionVariableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(optionAssignmentsProp);
+            float optionVariableAssignmentListReorderableListHeight = optionVariableAssignmentListReorderableList.GetHeight();
+            Rect optionVariableAssignmentListReorderableListRect = new Rect(rect.x + 20, rect.y, rect.width - 20, optionVariableAssignmentListReorderableListHeight);
+            EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, optionVariableAssignmentListReorderableListHeight + 2), new Color(0.3f, 0.3f, 0.3f));
+            optionVariableAssignmentListReorderableList.DoList(optionVariableAssignmentListReorderableListRect);
+
+            rect.y += optionVariableAssignmentListReorderableListHeight;
+
+            rect.y += 2;
         }
-        else if (nextOption == DialogueNextOption.DIALOGUE_OPTIONS)
+
+        EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
+        EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, 20, ButtonRowHeight), "\u2192");
+        if (GUI.Button(new Rect(rect.x + 40, rect.y, rect.width - 40, ButtonRowHeight), "New Option", EditorStyles.miniButton))
         {
-            SerializedProperty nextDialogueOptionsProp = dialogueNodeProp.FindPropertyRelative("m_options");
-
-            for (int i = 0; i < nextDialogueOptionsProp.arraySize; i++)
-            {
-                SerializedProperty nextDialogueOptionProp = nextDialogueOptionsProp.GetArrayElementAtIndex(i);
-                SerializedProperty optionTextProp = nextDialogueOptionProp.FindPropertyRelative("m_dialogueOptionText");
-                DialogueOptionText optionText = (DialogueOptionText) optionTextProp.objectReferenceValue;
-                SerializedProperty optionNextProp = nextDialogueOptionProp.FindPropertyRelative("m_next");
-                DialogueText optionNextText = (DialogueText) optionNextProp.objectReferenceValue;
-
-                EditorGUIUtility.labelWidth = 20.0f;
-                EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
-                EditorGUI.PropertyField(new Rect(rect.x + 20, rect.y, 100, DialogueTextRefFieldHeight), optionTextProp, new GUIContent("\u2192"));
-                if (optionText)
-                {
-                    optionText.text = EditorGUI.TextField(new Rect(rect.x + 120, rect.y, rect.width - 180, DialogueTextRefFieldHeight), optionText.text);
-                    EditorUtility.SetDirty(optionText);
-                } else {
-                    EditorGUI.BeginDisabledGroup(true);
-                    EditorGUI.TextField(new Rect(rect.x + 120, rect.y, rect.width - 280, DialogueTextRefFieldHeight), "");
-                    EditorGUI.EndDisabledGroup();
-                    if (GUI.Button(new Rect(rect.xMax - 60 - 100, rect.y, 100, DialogueTextRefFieldHeight), "New Option Text", EditorStyles.miniButtonMid))
-                    {
-                        DialogueOptionText newOptionText = PromptToCreate<DialogueOptionText>("New Dialogue Option Text", "Dialogue Option Text");
-                        if (newOptionText != null)
-                        {
-                            optionTextProp.objectReferenceValue = newOptionText;
-                        }
-                    }
-                }
-                if (GUI.Button(new Rect(rect.xMax - 60, rect.y, 60, DialogueTextRefFieldHeight), "De|ete", EditorStyles.miniButtonRight))
-                {
-                    if (EditorUtility.DisplayDialog("Delete Option", "Are you sure you want to delete?", "Yes", "No"))
-                    {
-                        DeleteOption(nextDialogueOptionsProp, i);
-                        return;
-                    }
-                }
-
-                rect.y += DialogueTextRefFieldHeight;
-
-                rect.y += 2;
-
-                EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
-                DrawDialogueTextLinkageRow(new Rect(rect.x + 44, rect.y, rect.width - 44, DialogueTextRefFieldHeight), optionNextProp, 20.0f, new GUIContent("\u2198"));
-
-                rect.y += DialogueTextRefFieldHeight;
-
-                rect.y += 2;
-            }
-
-            EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
-            EditorGUI.LabelField(new Rect(rect.x + 20, rect.y, 20, ButtonRowHeight), "\u2192");
-            if (GUI.Button(new Rect(rect.x + 40, rect.y, rect.width - 40, ButtonRowHeight), "New Option", EditorStyles.miniButton))
-            {
-                AddOption(nextDialogueOptionsProp);
-            }
-
-            rect.y += ButtonRowHeight;
+            AddOption(nextDialogueOptionsProp);
         }
+
+        rect.y += ButtonRowHeight;
+
+        rect.y += 2;
+
+        SerializedProperty nextsProp = dialogueNodeProp.FindPropertyRelative("m_nexts");
+        SerializedProperty finalNextProp = dialogueNodeProp.FindPropertyRelative("m_finalNext");
+        float nextsHeight = m_dialogueNodeNextListPropertyDrawer.GetHeight(nextsProp);
+        Rect nextsRect = new Rect(rect.x, rect.y, rect.width, nextsHeight);
+        m_dialogueNodeNextListPropertyDrawer.DrawDialogueNodeNexts(
+            nextsRect,
+            nextsProp,
+            finalNextProp,
+            "Branches");
+
+        rect.y += 2;
 
         rect.y += 10;
 
         EditorGUIUtility.labelWidth = prevLabelWidth;
-    }
-
-    void DrawDialogueNextOptionRow(Rect rect, SerializedProperty nextOptionProp)
-    {
-        // string[] nextOptionToolbarTexts = { "End", "Text", "Options" };
-        // nextOptionProp.intValue = GUI.Toolbar(new Rect(rect.x, rect.y, rect.width, NextOptionFieldHeight), nextOptionProp.intValue, nextOptionToolbarTexts);
-
-        DialogueNextOption nextOption = (DialogueNextOption) nextOptionProp.intValue;
-
-        GUIStyle selectedStyle = new GUIStyle();
-        selectedStyle.normal.background = new Texture2D(1, 1);
-        selectedStyle.padding = EditorStyles.miniButtonLeft.padding;
-        selectedStyle.alignment = TextAnchor.MiddleLeft;
-
-        string selectedText = "";
-        string[] texts = new string[]{};
-        DialogueNextOption[] selectValues = new DialogueNextOption[]{};
-
-        switch (nextOption)
-        {
-            case DialogueNextOption.END:
-            {
-                selectedText = "End";
-                texts = new string[]{ "Text", "Options" };
-                selectValues = new DialogueNextOption[]{ DialogueNextOption.DIALOGUE_TEXT, DialogueNextOption.DIALOGUE_OPTIONS };
-                selectedStyle.normal.background.SetPixels(new Color[]{ Color.red });
-                selectedStyle.normal.background.Apply();
-                selectedStyle.normal.textColor = Color.white;
-                break;
-            }
-            case DialogueNextOption.DIALOGUE_TEXT:
-            {
-                selectedText = "\u2198 Text";
-                texts = new string[]{ "Options", "End" };
-                selectValues = new DialogueNextOption[]{ DialogueNextOption.DIALOGUE_OPTIONS, DialogueNextOption.END };
-                selectedStyle.normal.background.SetPixels(new Color[]{ new Color(0.3f, 0.3f, 0.3f) });
-                selectedStyle.normal.background.Apply();
-                selectedStyle.normal.textColor = Color.white;
-                break;
-            }
-            case DialogueNextOption.DIALOGUE_OPTIONS:
-            {
-                selectedText = "\u2198 Options";
-                texts = new string[]{ "Text", "End" };
-                selectValues = new DialogueNextOption[]{ DialogueNextOption.DIALOGUE_TEXT, DialogueNextOption.END };
-                selectedStyle.normal.background.SetPixels(new Color[]{ new Color(0.3f, 0.3f, 0.3f) });
-                selectedStyle.normal.background.Apply();
-                selectedStyle.normal.textColor = Color.white;
-                break;
-            }
-        }
-
-        GUI.Label(new Rect(rect.x, rect.y, rect.width - 120, rect.height), selectedText, selectedStyle);
-        if (GUI.Button(new Rect(rect.xMax - 120, rect.y, 60, NextOptionFieldHeight), texts[0], EditorStyles.miniButtonMid))
-        {
-            nextOptionProp.intValue = (int) selectValues[0];
-        }
-        if (GUI.Button(new Rect(rect.xMax - 60, rect.y, 60, NextOptionFieldHeight), texts[1], EditorStyles.miniButtonRight))
-        {
-            nextOptionProp.intValue = (int) selectValues[1];
-        }
     }
 
     void DrawDialogueTextLinkageRow(Rect rect, SerializedProperty property, float labelWidth, GUIContent label = null)
@@ -350,6 +318,15 @@ public class DialogueEditor : Editor
 
         if (dialogueText == null)
         {
+            Rect coverRect = new Rect(rect.x + labelWidth, rect.y, rect.width - 80 - labelWidth, rect.height);
+            GUIStyle coverStyle = new GUIStyle();
+            coverStyle.normal.background = new Texture2D(1, 1);
+            coverStyle.padding = EditorStyles.miniButtonLeft.padding;
+            coverStyle.alignment = TextAnchor.MiddleLeft;
+            coverStyle.normal.background.SetPixels(new Color[]{ Color.red });
+            coverStyle.normal.background.Apply();
+            coverStyle.normal.textColor = Color.white;
+            GUI.Label(coverRect, "End", coverStyle);
             if (GUI.Button(new Rect(rect.xMax - 60, rect.y, 60, rect.height), "New", rightButtonStyle))
             {
                 DialogueText newDialogueText = PromptToCreate<DialogueText>("New Dialogue Text", "Dialogue Text");
@@ -394,23 +371,24 @@ public class DialogueEditor : Editor
             height += 2 + DialogueTextAreaFieldHeight;
         }
 
-        height += 2 + NextOptionFieldHeight;
+        SerializedProperty assignmentsProp = element.FindPropertyRelative("m_assignments");
+        VariableAssignmentListReorderableList variableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(assignmentsProp);
+        height += variableAssignmentListReorderableList.GetHeight();
 
-        SerializedProperty nextOptionProp = element.FindPropertyRelative("m_nextOption");
+        height += EditorGUIUtility.singleLineHeight + 2;
 
-        DialogueNextOption nextOption = (DialogueNextOption) nextOptionProp.enumValueIndex;
-
-        if (nextOption == DialogueNextOption.DIALOGUE_TEXT)
+        SerializedProperty optionsProp = element.FindPropertyRelative("m_options");
+        for (int i = 0; i < optionsProp.arraySize; i++)
         {
-            height += 2 + DialogueTextRefFieldHeight;
+            SerializedProperty optionProp = optionsProp.GetArrayElementAtIndex(i);
+            SerializedProperty optionAssignmentsProp = optionProp.FindPropertyRelative("m_assignments");
+            VariableAssignmentListReorderableList optionVariableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(optionAssignmentsProp);
+            height += optionVariableAssignmentListReorderableList.GetHeight() + 2;
         }
-        else if (nextOption == DialogueNextOption.DIALOGUE_OPTIONS)
-        {
-            SerializedProperty optionsProp = element.FindPropertyRelative("m_options");
-            int optionSize = optionsProp.arraySize;
+        height += (2 + DialogueTextRefFieldHeight) * optionsProp.arraySize + 2 + ButtonRowHeight;
 
-            height += (2 + DialogueTextRefFieldHeight + 2 + DialogueTextRefFieldHeight) * optionSize + 2 + ButtonRowHeight;
-        }
+        SerializedProperty nextsProp = element.FindPropertyRelative("m_nexts");
+        height += m_dialogueNodeNextListPropertyDrawer.GetHeight(nextsProp) + 2;
 
         height += 4;
 
@@ -441,9 +419,9 @@ public class DialogueEditor : Editor
 
         SerializedProperty element = l.serializedProperty.GetArrayElementAtIndex(index);
         element.FindPropertyRelative("m_dialogueText").objectReferenceValue = null;
-        element.FindPropertyRelative("m_nextOption").enumValueIndex = 0;
-        element.FindPropertyRelative("m_next").objectReferenceValue = null;
         element.FindPropertyRelative("m_options").arraySize = 0;
+        element.FindPropertyRelative("m_nexts").arraySize = 0;
+        element.FindPropertyRelative("m_finalNext").objectReferenceValue = null;
     }
 
     void Add(ReorderableList l, DialogueText dialogueText)
@@ -455,9 +433,9 @@ public class DialogueEditor : Editor
 
         SerializedProperty element = l.serializedProperty.GetArrayElementAtIndex(index);
         element.FindPropertyRelative("m_dialogueText").objectReferenceValue = dialogueText;
-        element.FindPropertyRelative("m_nextOption").enumValueIndex = 0;
-        element.FindPropertyRelative("m_next").objectReferenceValue = null;
         element.FindPropertyRelative("m_options").arraySize = 0;
+        element.FindPropertyRelative("m_nexts").arraySize = 0;
+        element.FindPropertyRelative("m_finalNext").objectReferenceValue = null;
     }
 
     void AddDropdown(Rect buttonRect, ReorderableList l)
@@ -489,12 +467,28 @@ public class DialogueEditor : Editor
 
         SerializedProperty element = optionsProp.GetArrayElementAtIndex(index);
         element.FindPropertyRelative("m_dialogueOptionText").objectReferenceValue = null;
-        element.FindPropertyRelative("m_next").objectReferenceValue = null;
+        element.FindPropertyRelative("m_assignments").arraySize = 0;
     }
 
     void DeleteOption(SerializedProperty optionsProp, int index)
     {
         optionsProp.DeleteArrayElementAtIndex(index);
+    }
+
+    void AddNext(SerializedProperty nextsProp)
+    {
+        int index = nextsProp.arraySize;
+        nextsProp.InsertArrayElementAtIndex(index);
+        serializedObject.ApplyModifiedProperties();
+
+        SerializedProperty element = nextsProp.GetArrayElementAtIndex(index);
+        element.FindPropertyRelative("m_conditions").arraySize = 0;
+        element.FindPropertyRelative("m_next").objectReferenceValue = null;
+    }
+
+    void DeleteNext(SerializedProperty nextsProp, int index)
+    {
+        nextsProp.DeleteArrayElementAtIndex(index);
     }
 
     void DeleteDialogueNode(int index)

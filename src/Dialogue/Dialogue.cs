@@ -6,100 +6,28 @@ using UnityEngine;
 namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
-public enum DialogueNextOption
-{
-    END = 0,
-    DIALOGUE_TEXT = 1,
-    DIALOGUE_OPTIONS = 2,
-}
-
-[Serializable]
-public class DialogueOption
-{
-    [SerializeField]
-    private DialogueOptionText m_dialogueOptionText = null;
-
-    public DialogueOptionText dialogueOptionText
-    {
-        get
-        {
-            return m_dialogueOptionText;
-        }
-    }
-
-    [SerializeField]
-    private DialogueText m_next = null;
-
-    public DialogueText next
-    {
-        get
-        {
-            return m_next;
-        }
-    }
-}
-
-[Serializable]
-public class DialogueNode
-{
-    [SerializeField]
-    private DialogueText m_dialogueText = null;
-
-    public DialogueText dialogueText
-    {
-        get
-        {
-            return m_dialogueText;
-        }
-    }
-
-    [SerializeField]
-    private DialogueNextOption m_nextOption = DialogueNextOption.END;
-
-    public DialogueNextOption nextOption
-    {
-        get
-        {
-            return m_nextOption;
-        }
-    }
-
-    // DIALOGUE TEXT
-    [SerializeField]
-    private DialogueText m_next = null;
-
-    public DialogueText next
-    {
-        get
-        {
-            return m_next;
-        }
-    }
-
-
-    // DIALOGUE_OPTIONS
-    [SerializeField]
-    private List<DialogueOption> m_options = null;
-
-    public List<DialogueOption> options
-    {
-        get
-        {
-            return m_options;
-        }
-    }
-}
-
-[CreateAssetMenu(menuName="Dialogue System/Dialogue")]
+[CreateAssetMenu(menuName="Dialogue System/Dialogue/Dialogue")]
 public class Dialogue : ScriptableObject
 {
+
     [SerializeField]
-    private DialogueText m_beginText = null;
-    public DialogueText beginText
+    private List<DialogueNodeNext> m_beginTexts = new List<DialogueNodeNext>();
+
+    public List<DialogueNodeNext> beginTexts
     {
         get
         {
-            return m_beginText;
+            return m_beginTexts;
+        }
+    }
+
+    [SerializeField]
+    private DialogueText m_finalBeginText = null;
+    public DialogueText finalBeginText
+    {
+        get
+        {
+            return m_finalBeginText;
         }
     }
 
@@ -114,6 +42,111 @@ public class Dialogue : ScriptableObject
         }
     }
 
+    [SerializeField]
+    private List<VariableAssignment> m_dialogueVariables = new List<VariableAssignment>();
+
+    public List<VariableAssignment> dialogueVariables
+    {
+        get
+        {
+            return m_dialogueVariables;
+        }
+    }
+
+    private Dictionary<Variable, VariableValue> m_variableValues = new Dictionary<Variable, VariableValue>();
+
+    public Dictionary<Variable, VariableValue> variableValues
+    {
+        get
+        {
+            return m_variableValues;
+        }
+    }
+
+    public void InitializeVariableValues()
+    {
+        m_variableValues.Clear();
+        ApplyVariableValues(m_dialogueVariables);
+    }
+
+    public DialogueText GetBeginText()
+    {
+        foreach (DialogueNodeNext dialogueNodeNext in m_beginTexts)
+        {
+            if (dialogueNodeNext.EvaluateCondition(variableValues))
+            {
+                return dialogueNodeNext.next;
+            }
+        }
+        return m_finalBeginText;
+    }
+
+    public void ApplyVariableValues(List<VariableAssignment> assignments)
+    {
+        foreach (VariableAssignment assignment in assignments)
+        {
+            Variable variable = assignment.variable;
+            if (!m_variableValues.ContainsKey(variable))
+            {
+                AddVariableValue(assignment);
+                continue;
+            }
+            VariableValue variableValue = m_variableValues[variable];
+            switch (variable.GetVariableType())
+            {
+                case VariableType.INTEGER:
+                {
+                    variableValue.SetValue(assignment.intValue);
+                    break;
+                }
+                case VariableType.FLOAT:
+                {
+                    variableValue.SetValue(assignment.floatValue);
+                    break;
+                }
+                case VariableType.BOOLEAN:
+                {
+                    variableValue.SetValue(assignment.boolValue);
+                    break;
+                }
+                case VariableType.STRING:
+                {
+                    variableValue.SetValue(assignment.stringValue);
+                    break;
+                }
+            }
+        }
+    }
+
+    void AddVariableValue(VariableAssignment variableAssignment)
+    {
+        Variable variable = variableAssignment.variable;
+        switch (variable.GetVariableType())
+        {
+            case VariableType.INTEGER:
+            {
+                m_variableValues.Add(variable, new VariableValue((IntVariable) variable, variableAssignment.intValue));
+                break;
+            }
+            case VariableType.FLOAT:
+            {
+                m_variableValues.Add(variable, new VariableValue((FloatVariable) variable, variableAssignment.floatValue));
+                break;
+            }
+            case VariableType.BOOLEAN:
+            {
+                m_variableValues.Add(variable, new VariableValue((BoolVariable) variable, variableAssignment.boolValue));
+                break;
+            }
+            case VariableType.STRING:
+            {
+                m_variableValues.Add(variable, new VariableValue((StringVariable) variable, variableAssignment.stringValue));
+                break;
+            }
+        }
+
+    }
+
     public (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialoguedTexts) GetUnreferencedDialoguedTextAndUnusedNodes()
     {
         List<DialogueText> dialogueTextsFromNode = new List<DialogueText>();
@@ -121,9 +154,17 @@ public class Dialogue : ScriptableObject
         List<DialogueText> dialogueTextsFromNextText = new List<DialogueText>();
         List<DialogueText> dialogueTextsFromOptionNextText =new List<DialogueText>();
 
-        if (beginText != null)
+        foreach (DialogueNodeNext beginTextNext in m_beginTexts)
         {
-            dialogueTextsFromBeginText.Add(beginText);
+            if (beginTextNext.next != null)
+            {
+                dialogueTextsFromBeginText.Add(beginTextNext.next);
+            }
+        }
+
+        if (m_finalBeginText != null)
+        {
+            dialogueTextsFromBeginText.Add(m_finalBeginText);
         }
 
         foreach (DialogueNode dialogueNode in dialogueNodes)
@@ -133,22 +174,17 @@ public class Dialogue : ScriptableObject
                 dialogueTextsFromNode.Add(dialogueNode.dialogueText);
             }
 
-            if (dialogueNode.nextOption == DialogueNextOption.DIALOGUE_TEXT)
+            foreach (DialogueNodeNext dialogueNodeNext in dialogueNode.nexts)
             {
-                if (dialogueNode.next != null)
+                if (dialogueNodeNext.next != null)
                 {
-                    dialogueTextsFromNextText.Add(dialogueNode.next);
+                    dialogueTextsFromNextText.Add(dialogueNodeNext.next);
                 }
             }
-            else if (dialogueNode.nextOption == DialogueNextOption.DIALOGUE_OPTIONS)
+
+            if (dialogueNode.finalNext != null)
             {
-                foreach (DialogueOption dialogueOption in dialogueNode.options)
-                {
-                    if (dialogueOption.next != null)
-                    {
-                        dialogueTextsFromNextText.Add(dialogueOption.next);
-                    }
-                }
+                dialogueTextsFromNextText.Add(dialogueNode.finalNext);
             }
         }
 
