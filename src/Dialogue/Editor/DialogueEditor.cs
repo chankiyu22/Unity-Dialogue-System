@@ -12,6 +12,8 @@ public class DialogueEditor : Editor
     SerializedProperty dialogueNodesProp;
     ReorderableList dialogueNodeReorderableList;
 
+    DialogueVariableReorderableList dialogueVariableReorderableList;
+
     List<DialogueText> m_undefinedDialogueTexts = new List<DialogueText>();
     List<DialogueText> m_unusedDialogueTexts = new List<DialogueText>();
 
@@ -56,6 +58,9 @@ public class DialogueEditor : Editor
         dialogueNodeReorderableList.onAddDropdownCallback = AddDropdown;
         dialogueNodeReorderableList.onRemoveCallback = RemoveDialogueNodeElement;
         dialogueNodeReorderableList.drawHeaderCallback = DrawDialogueNodeListHeader;
+
+        SerializedProperty dialogueVariableListProp = serializedObject.FindProperty("m_dialogueVariables");
+        dialogueVariableReorderableList = new DialogueVariableReorderableList(serializedObject, dialogueVariableListProp);
     }
 
     public override void OnInspectorGUI()
@@ -66,6 +71,9 @@ public class DialogueEditor : Editor
         m_undefinedDialogueTexts = undefinedDialogueTexts;
         m_unusedDialogueTexts = unusedDialogueTexts;
         DrawBeginTextField();
+
+        SerializedProperty dialogueVariableListProp = serializedObject.FindProperty("m_dialogueVariables");
+        dialogueVariableReorderableList.DoLayoutList();
         dialogueNodeReorderableList.DoLayoutList();
         serializedObject.ApplyModifiedProperties();
     }

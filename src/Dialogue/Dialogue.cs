@@ -90,7 +90,86 @@ public class DialogueNode
     }
 }
 
-[CreateAssetMenu(menuName="Dialogue System/Dialogue")]
+[Serializable]
+public class DialogueVariable
+{
+    [SerializeField]
+    private Variable m_variable = null;
+
+    public Variable variable
+    {
+        get
+        {
+            return m_variable;
+        }
+    }
+
+    [SerializeField]
+    private int m_intValue = 0;
+
+    public int intValue
+    {
+        get
+        {
+            return m_intValue;
+        }
+
+        set
+        {
+            m_intValue = value;
+        }
+    }
+
+    [SerializeField]
+    private float m_floatValue = 0;
+
+    public float floatValue
+    {
+        get
+        {
+            return m_floatValue;
+        }
+
+        set
+        {
+            m_floatValue = value;
+        }
+    }
+
+    [SerializeField]
+    private bool m_boolValue = false;
+
+    public bool boolValue
+    {
+        get
+        {
+            return m_boolValue;
+        }
+
+        set
+        {
+            m_boolValue = value;
+        }
+    }
+
+    [SerializeField]
+    private string m_stringValue = null;
+
+    public string stringValue
+    {
+        get
+        {
+            return m_stringValue;
+        }
+
+        set
+        {
+            m_stringValue = value;
+        }
+    }
+}
+
+[CreateAssetMenu(menuName="Dialogue System/Dialogue/Dialogue")]
 public class Dialogue : ScriptableObject
 {
     [SerializeField]
@@ -111,6 +190,17 @@ public class Dialogue : ScriptableObject
         get
         {
             return m_dialogueNodes;
+        }
+    }
+
+    [SerializeField]
+    private List<DialogueVariable> m_dialogueVariables = new List<DialogueVariable>();
+
+    public List<DialogueVariable> dialogueVariables
+    {
+        get
+        {
+            return m_dialogueVariables;
         }
     }
 
