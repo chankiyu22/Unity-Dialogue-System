@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Chankiyu22.DialogueSystem
+namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
 public enum DialogueNextOption

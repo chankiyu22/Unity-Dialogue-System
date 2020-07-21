@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace Chankiyu22.DialogueSystem
+namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
 [CustomPropertyDrawer(typeof(Dialogue))]

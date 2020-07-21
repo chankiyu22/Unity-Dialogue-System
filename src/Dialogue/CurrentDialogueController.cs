@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Chankiyu22.DialogueSystem
+namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
 public class CurrentDialogueController : MonoBehaviour

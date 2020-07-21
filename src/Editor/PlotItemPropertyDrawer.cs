@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 
 using Chankiyu22.DialogueSystem.Avatars;
+using Chankiyu22.DialogueSystem.Dialogues;
 
 namespace Chankiyu22.DialogueSystem
 {

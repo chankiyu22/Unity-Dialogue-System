@@ -1,6 +1,6 @@
 using UnityEditor;
 
-namespace Chankiyu22.DialogueSystem
+namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
 [CustomEditor(typeof(DialogueController))]

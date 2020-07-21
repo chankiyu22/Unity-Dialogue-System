@@ -1,13 +1,14 @@
 using UnityEngine;
 
-namespace Chankiyu22.DialogueSystem
+namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
-[CreateAssetMenu(menuName="Dialogue System/Dialogue Option Text")]
-public class DialogueOptionText : ScriptableObject
+[CreateAssetMenu(menuName="Dialogue System/Dialogue Text")]
+public class DialogueText : ScriptableObject
 {
+    [TextArea(3, 3)]
     [SerializeField]
-    private string m_text = null;
+    private string m_text;
 
     public string text
     {
@@ -22,5 +23,5 @@ public class DialogueOptionText : ScriptableObject
         }
     }
 }
-
+    
 }

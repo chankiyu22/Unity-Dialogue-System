@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditorInternal;
 
+using Chankiyu22.DialogueSystem.Dialogues;
+
 namespace Chankiyu22.DialogueSystem
 {
 

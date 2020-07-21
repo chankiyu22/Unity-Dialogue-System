@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+using Chankiyu22.DialogueSystem.Dialogues;
 using Chankiyu22.DialogueSystem.Characters;
 using Chankiyu22.DialogueSystem.Avatars;
 
