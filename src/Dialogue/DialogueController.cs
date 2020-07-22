@@ -73,6 +73,7 @@ public class DialogueController : MonoBehaviour
             return;
         }
         m_currentDialogueController = this;
+        m_dialogue.InitializeVariableValues();
         EmitDialogueBegin(m_dialogue);
     }
 
@@ -98,6 +99,7 @@ public class DialogueController : MonoBehaviour
         if (m_currentDialogueNode != null)
         {
             EmitDialogueTextEnd(m_currentDialogueNode.dialogueText);
+            m_dialogue.ApplyVariableValues(m_currentDialogueNode.assignments);
             switch (m_currentDialogueNode.nextOption) {
                 case DialogueNextOption.END:
                 {
@@ -175,6 +177,7 @@ public class DialogueController : MonoBehaviour
 
         m_currentDialogueNode = dialogueNode;
         EmitDialogueOptionsEnd(dialogueOptions);
+        m_dialogue.ApplyVariableValues(selectedOption.assignments);
         EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
 

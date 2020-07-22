@@ -12,10 +12,14 @@ public class DialogueEditor : Editor
     SerializedProperty dialogueNodesProp;
     ReorderableList dialogueNodeReorderableList;
 
+    List<ReorderableList> dialogueNodeVariableAssignmentReorderableLists = new List<ReorderableList>();
+
     DialogueVariableReorderableList dialogueVariableReorderableList;
 
     List<DialogueText> m_undefinedDialogueTexts = new List<DialogueText>();
     List<DialogueText> m_unusedDialogueTexts = new List<DialogueText>();
+
+    VariableAssignmentListPropertyDrawerManager variableAssignmentListPropertyDrawerManager = new VariableAssignmentListPropertyDrawerManager();
 
     float DialogueTextRefFieldHeight
     {
@@ -182,6 +186,16 @@ public class DialogueEditor : Editor
 
         rect.y += 2;
 
+        SerializedProperty assignmentsProp = dialogueNodeProp.FindPropertyRelative("m_assignments");
+        VariableAssignmentListReorderableList dialogueNodeVariableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(assignmentsProp);
+        float dialogueNodeVariableAssignmentListReorderableListHeight = dialogueNodeVariableAssignmentListReorderableList.GetHeight();
+        Rect dialogueNodeVariableAssignmentListReorderableListRect = new Rect(rect.x, rect.y, rect.width, dialogueNodeVariableAssignmentListReorderableListHeight);
+        dialogueNodeVariableAssignmentListReorderableList.DoList(dialogueNodeVariableAssignmentListReorderableListRect);
+
+        rect.y += dialogueNodeVariableAssignmentListReorderableListHeight;
+
+        rect.y += 2;
+
         DialogueNextOption nextOption = (DialogueNextOption) nextOptionProp.intValue;
 
         DrawDialogueNextOptionRow(new Rect(rect.x, rect.y, rect.width, NextOptionFieldHeight), nextOptionProp);
@@ -245,10 +259,14 @@ public class DialogueEditor : Editor
 
                 rect.y += 2;
 
-                EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
-                DrawDialogueTextLinkageRow(new Rect(rect.x + 44, rect.y, rect.width - 44, DialogueTextRefFieldHeight), optionNextProp, 20.0f, new GUIContent("\u2198"));
+                SerializedProperty optionAssignmentsProp = nextDialogueOptionProp.FindPropertyRelative("m_assignments");
+                VariableAssignmentListReorderableList optionVariableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(optionAssignmentsProp);
+                float optionVariableAssignmentListReorderableListHeight = optionVariableAssignmentListReorderableList.GetHeight();
+                Rect optionVariableAssignmentListReorderableListRect = new Rect(rect.x + 20, rect.y, rect.width - 20, optionVariableAssignmentListReorderableListHeight);
+                EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, optionVariableAssignmentListReorderableListHeight + 2), new Color(0.3f, 0.3f, 0.3f));
+                optionVariableAssignmentListReorderableList.DoList(optionVariableAssignmentListReorderableListRect);
 
-                rect.y += DialogueTextRefFieldHeight;
+                rect.y += optionVariableAssignmentListReorderableListHeight;
 
                 rect.y += 2;
             }
@@ -402,6 +420,10 @@ public class DialogueEditor : Editor
             height += 2 + DialogueTextAreaFieldHeight;
         }
 
+        SerializedProperty assignmentsProp = element.FindPropertyRelative("m_assignments");
+        VariableAssignmentListReorderableList variableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(assignmentsProp);
+        height += variableAssignmentListReorderableList.GetHeight();
+
         height += 2 + NextOptionFieldHeight;
 
         SerializedProperty nextOptionProp = element.FindPropertyRelative("m_nextOption");
@@ -415,9 +437,14 @@ public class DialogueEditor : Editor
         else if (nextOption == DialogueNextOption.DIALOGUE_OPTIONS)
         {
             SerializedProperty optionsProp = element.FindPropertyRelative("m_options");
-            int optionSize = optionsProp.arraySize;
-
-            height += (2 + DialogueTextRefFieldHeight + 2 + DialogueTextRefFieldHeight) * optionSize + 2 + ButtonRowHeight;
+            for (int i = 0; i < optionsProp.arraySize; i++)
+            {
+                SerializedProperty optionProp = optionsProp.GetArrayElementAtIndex(i);
+                SerializedProperty optionAssignmentsProp = optionProp.FindPropertyRelative("m_assignments");
+                VariableAssignmentListReorderableList optionVariableAssignmentListReorderableList = variableAssignmentListPropertyDrawerManager.GetReorderableList(optionAssignmentsProp);
+                height += optionVariableAssignmentListReorderableList.GetHeight() + 2;
+            }
+            height += (2 + DialogueTextRefFieldHeight) * optionsProp.arraySize + 2 + ButtonRowHeight;
         }
 
         height += 4;

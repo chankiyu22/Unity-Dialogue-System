@@ -6,169 +6,6 @@ using UnityEngine;
 namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
-public enum DialogueNextOption
-{
-    END = 0,
-    DIALOGUE_TEXT = 1,
-    DIALOGUE_OPTIONS = 2,
-}
-
-[Serializable]
-public class DialogueOption
-{
-    [SerializeField]
-    private DialogueOptionText m_dialogueOptionText = null;
-
-    public DialogueOptionText dialogueOptionText
-    {
-        get
-        {
-            return m_dialogueOptionText;
-        }
-    }
-
-    [SerializeField]
-    private DialogueText m_next = null;
-
-    public DialogueText next
-    {
-        get
-        {
-            return m_next;
-        }
-    }
-}
-
-[Serializable]
-public class DialogueNode
-{
-    [SerializeField]
-    private DialogueText m_dialogueText = null;
-
-    public DialogueText dialogueText
-    {
-        get
-        {
-            return m_dialogueText;
-        }
-    }
-
-    [SerializeField]
-    private DialogueNextOption m_nextOption = DialogueNextOption.END;
-
-    public DialogueNextOption nextOption
-    {
-        get
-        {
-            return m_nextOption;
-        }
-    }
-
-    // DIALOGUE TEXT
-    [SerializeField]
-    private DialogueText m_next = null;
-
-    public DialogueText next
-    {
-        get
-        {
-            return m_next;
-        }
-    }
-
-
-    // DIALOGUE_OPTIONS
-    [SerializeField]
-    private List<DialogueOption> m_options = null;
-
-    public List<DialogueOption> options
-    {
-        get
-        {
-            return m_options;
-        }
-    }
-}
-
-[Serializable]
-public class DialogueVariable
-{
-    [SerializeField]
-    private Variable m_variable = null;
-
-    public Variable variable
-    {
-        get
-        {
-            return m_variable;
-        }
-    }
-
-    [SerializeField]
-    private int m_intValue = 0;
-
-    public int intValue
-    {
-        get
-        {
-            return m_intValue;
-        }
-
-        set
-        {
-            m_intValue = value;
-        }
-    }
-
-    [SerializeField]
-    private float m_floatValue = 0;
-
-    public float floatValue
-    {
-        get
-        {
-            return m_floatValue;
-        }
-
-        set
-        {
-            m_floatValue = value;
-        }
-    }
-
-    [SerializeField]
-    private bool m_boolValue = false;
-
-    public bool boolValue
-    {
-        get
-        {
-            return m_boolValue;
-        }
-
-        set
-        {
-            m_boolValue = value;
-        }
-    }
-
-    [SerializeField]
-    private string m_stringValue = null;
-
-    public string stringValue
-    {
-        get
-        {
-            return m_stringValue;
-        }
-
-        set
-        {
-            m_stringValue = value;
-        }
-    }
-}
-
 [CreateAssetMenu(menuName="Dialogue System/Dialogue/Dialogue")]
 public class Dialogue : ScriptableObject
 {
@@ -194,14 +31,88 @@ public class Dialogue : ScriptableObject
     }
 
     [SerializeField]
-    private List<DialogueVariable> m_dialogueVariables = new List<DialogueVariable>();
+    private List<VariableAssignment> m_dialogueVariables = new List<VariableAssignment>();
 
-    public List<DialogueVariable> dialogueVariables
+    public List<VariableAssignment> dialogueVariables
     {
         get
         {
             return m_dialogueVariables;
         }
+    }
+
+    private Dictionary<Variable, VariableValue> m_variableValues = new Dictionary<Variable, VariableValue>();
+
+    public void InitializeVariableValues()
+    {
+        m_variableValues.Clear();
+        ApplyVariableValues(m_dialogueVariables);
+    }
+
+    public void ApplyVariableValues(List<VariableAssignment> assignments)
+    {
+        foreach (VariableAssignment assignment in assignments)
+        {
+            Variable variable = assignment.variable;
+            if (!m_variableValues.ContainsKey(variable))
+            {
+                AddVariableValue(assignment);
+                continue;
+            }
+            VariableValue variableValue = m_variableValues[variable];
+            switch (variable.GetVariableType())
+            {
+                case VariableType.INTEGER:
+                {
+                    variableValue.SetValue(assignment.intValue);
+                    break;
+                }
+                case VariableType.FLOAT:
+                {
+                    variableValue.SetValue(assignment.floatValue);
+                    break;
+                }
+                case VariableType.BOOLEAN:
+                {
+                    variableValue.SetValue(assignment.boolValue);
+                    break;
+                }
+                case VariableType.STRING:
+                {
+                    variableValue.SetValue(assignment.stringValue);
+                    break;
+                }
+            }
+        }
+    }
+
+    void AddVariableValue(VariableAssignment variableAssignment)
+    {
+        Variable variable = variableAssignment.variable;
+        switch (variable.GetVariableType())
+        {
+            case VariableType.INTEGER:
+            {
+                m_variableValues.Add(variable, new VariableValue((IntVariable) variable, variableAssignment.intValue));
+                break;
+            }
+            case VariableType.FLOAT:
+            {
+                m_variableValues.Add(variable, new VariableValue((FloatVariable) variable, variableAssignment.floatValue));
+                break;
+            }
+            case VariableType.BOOLEAN:
+            {
+                m_variableValues.Add(variable, new VariableValue((BoolVariable) variable, variableAssignment.boolValue));
+                break;
+            }
+            case VariableType.STRING:
+            {
+                m_variableValues.Add(variable, new VariableValue((StringVariable) variable, variableAssignment.stringValue));
+                break;
+            }
+        }
+
     }
 
     public (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialoguedTexts) GetUnreferencedDialoguedTextAndUnusedNodes()

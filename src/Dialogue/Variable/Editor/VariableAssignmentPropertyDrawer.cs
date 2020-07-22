@@ -4,8 +4,8 @@ using UnityEditor;
 namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
-[CustomPropertyDrawer(typeof(DialogueVariable))]
-class DialogueVariablePropertyDrawer : PropertyDrawer
+[CustomPropertyDrawer(typeof(VariableAssignment))]
+class VariableAssignmentPropertyDrawer : PropertyDrawer
 {
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
