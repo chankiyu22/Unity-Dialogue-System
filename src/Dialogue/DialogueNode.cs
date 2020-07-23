@@ -5,13 +5,6 @@ using UnityEngine;
 namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
-public enum DialogueNextOption
-{
-    END = 0,
-    DIALOGUE_TEXT = 1,
-    DIALOGUE_OPTIONS = 2,
-}
-
 [Serializable]
 public class DialogueNode
 {
@@ -34,17 +27,6 @@ public class DialogueNode
         get
         {
             return m_assignments;
-        }
-    }
-
-    [SerializeField]
-    private DialogueNextOption m_nextOption = DialogueNextOption.END;
-
-    public DialogueNextOption nextOption
-    {
-        get
-        {
-            return m_nextOption;
         }
     }
 

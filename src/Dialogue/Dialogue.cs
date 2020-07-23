@@ -134,22 +134,24 @@ public class Dialogue : ScriptableObject
                 dialogueTextsFromNode.Add(dialogueNode.dialogueText);
             }
 
-            if (dialogueNode.nextOption == DialogueNextOption.DIALOGUE_TEXT)
+            foreach (DialogueOption dialogueOption in dialogueNode.options)
             {
-                if (dialogueNode.next != null)
+                if (dialogueOption.next != null)
                 {
-                    dialogueTextsFromNextText.Add(dialogueNode.next);
+                    dialogueTextsFromNextText.Add(dialogueOption.next);
                 }
             }
-            else if (dialogueNode.nextOption == DialogueNextOption.DIALOGUE_OPTIONS)
+
+            foreach (DialogueNodeNext dialogueNodeNext in dialogueNode.nexts)
             {
-                foreach (DialogueOption dialogueOption in dialogueNode.options)
+                if (dialogueNodeNext.next != null)
                 {
-                    if (dialogueOption.next != null)
-                    {
-                        dialogueTextsFromNextText.Add(dialogueOption.next);
-                    }
+                    dialogueTextsFromNextText.Add(dialogueNodeNext.next);
                 }
+            }
+            if (dialogueNode.next != null)
+            {
+                dialogueTextsFromNextText.Add(dialogueNode.next);
             }
         }
 

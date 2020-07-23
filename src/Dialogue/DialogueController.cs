@@ -100,44 +100,30 @@ public class DialogueController : MonoBehaviour
         {
             EmitDialogueTextEnd(m_currentDialogueNode.dialogueText);
             m_dialogue.ApplyVariableValues(m_currentDialogueNode.assignments);
-            switch (m_currentDialogueNode.nextOption) {
-                case DialogueNextOption.END:
+            if (m_currentDialogueNode.options.Count > 0)
+            {
+                List<DialogueOption> dialogueOptions = m_currentDialogueNode.options;
+                if (dialogueOptions.Count == 0)
                 {
-                    m_currentDialogueNode = null;
+                    Debug.LogWarning("Next is options but no options found", this);
                     EndDialogue();
-                    break;
                 }
-                case DialogueNextOption.DIALOGUE_TEXT:
+                else
                 {
-                    m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == m_currentDialogueNode.next);
-                    if (m_currentDialogueNode == null)
-                    {
-                        Debug.LogWarning("Next is dialogue text but no dialogue text found", this);
-                        EndDialogue();
-                    }
-                    else
-                    {
-                        EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
-                    }
-                    break;
+                    EmitDialogueOptionsBegin(dialogueOptions);
                 }
-                case DialogueNextOption.DIALOGUE_OPTIONS:
+            }
+            else
+            {
+                m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == m_currentDialogueNode.next);
+                if (m_currentDialogueNode == null)
                 {
-                    List<DialogueOption> dialogueOptions = m_currentDialogueNode.options;
-                    if (dialogueOptions.Count == 0)
-                    {
-                        Debug.LogWarning("Next is options but no options found", this);
-                        EndDialogue();
-                    }
-                    else
-                    {
-                        EmitDialogueOptionsBegin(dialogueOptions);
-                    }
-                    break;
+                    Debug.LogWarning("Next is dialogue text but no dialogue text found", this);
+                    EndDialogue();
                 }
-                default:
+                else
                 {
-                    break;
+                    EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
                 }
             }
         }
@@ -151,7 +137,7 @@ public class DialogueController : MonoBehaviour
             return;
         }
 
-        if (m_currentDialogueNode.nextOption != DialogueNextOption.DIALOGUE_OPTIONS)
+        if (m_currentDialogueNode.options.Count == 0)
         {
             Debug.LogWarning("The current dialogue is not proceeding to options", this);
             return;
