@@ -264,7 +264,123 @@ public class DialogueEditor : Editor
 
         rect.y += ButtonRowHeight;
 
+        rect.y += 2;
+
         // dialoguenode.nexts
+        GUIStyle nextsHeaderStyle = new GUIStyle();
+        nextsHeaderStyle.normal.background = new Texture2D(1, 1);
+        nextsHeaderStyle.padding = EditorStyles.miniButtonLeft.padding;
+        nextsHeaderStyle.alignment = TextAnchor.MiddleLeft;
+        nextsHeaderStyle.normal.background.SetPixels(new Color[]{ new Color(0.3f, 0.3f, 0.3f) });
+        nextsHeaderStyle.normal.background.Apply();
+        nextsHeaderStyle.normal.textColor = Color.white;
+        Rect nextsHeaderRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
+        GUI.Label(nextsHeaderRect, "Branches", nextsHeaderStyle);
+
+        rect.y += nextsHeaderRect.height;
+
+        rect.y += 2;
+
+        SerializedProperty nextsProp = dialogueNodeProp.FindPropertyRelative("m_nexts");
+        for (int i = 0; i < nextsProp.arraySize; i++)
+        {
+            SerializedProperty nextProp = nextsProp.GetArrayElementAtIndex(i);
+
+            // Condition
+            {
+                Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
+                Rect ifLabelRect = new Rect(rect.x + borderRect.width, rect.y, 40, EditorGUIUtility.singleLineHeight);
+                Rect deleteButtonRect = new Rect(rect.xMax - 60, rect.y, 60, EditorGUIUtility.singleLineHeight);
+
+                EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
+
+                GUIStyle ifLabelStyle = new GUIStyle();
+                ifLabelStyle.normal.background = new Texture2D(1, 1);
+                ifLabelStyle.padding = EditorStyles.miniButtonLeft.padding;
+                ifLabelStyle.alignment = TextAnchor.MiddleLeft;
+                ifLabelStyle.normal.background.SetPixels(new Color[]{ new Color(0.3f, 0.3f, 0.3f) });
+                ifLabelStyle.normal.background.Apply();
+                ifLabelStyle.normal.textColor = Color.white;
+                GUI.Label(ifLabelRect, "If", ifLabelStyle);
+
+                if (GUI.Button(deleteButtonRect, "De|ete", EditorStyles.miniButton))
+                {
+                    DeleteNext(nextsProp, i);
+                    return;
+                }
+
+                rect.y += EditorGUIUtility.singleLineHeight;
+                rect.y += 2;
+            }
+
+            // Next Dialogue Text
+            {
+                Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
+                float indent = 20;
+                Rect propRect = new Rect(rect.x + borderRect.width + indent, rect.y, rect.width - borderRect.width - indent, EditorGUIUtility.singleLineHeight);
+
+                SerializedProperty nextDialogueTextProp = nextProp.FindPropertyRelative("m_next");
+
+                EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
+                DrawDialogueTextLinkageRow(propRect, nextDialogueTextProp, 20, new GUIContent("\u2192"));
+
+                rect.y += EditorGUIUtility.singleLineHeight;
+                rect.y += 2;
+            }
+        }
+
+        // New Next
+        {
+            Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
+            Rect labelRect = new Rect(rect.x + borderRect.width, rect.y, 40, EditorGUIUtility.singleLineHeight);
+            Rect buttonRect = new Rect(rect.x + borderRect.width + labelRect.width, rect.y, rect.width - borderRect.width - labelRect.width, EditorGUIUtility.singleLineHeight);
+
+            EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
+
+            GUIStyle labelStyle = new GUIStyle();
+            labelStyle.normal.background = new Texture2D(1, 1);
+            labelStyle.padding = EditorStyles.miniButtonLeft.padding;
+            labelStyle.alignment = TextAnchor.MiddleLeft;
+            labelStyle.normal.background.SetPixels(new Color[]{ new Color(0.5f, 0.5f, 0.5f) });
+            labelStyle.normal.background.Apply();
+            labelStyle.normal.textColor = Color.white;
+            GUI.Label(labelRect, "If", labelStyle);
+
+            if (GUI.Button(buttonRect, "New Branch", EditorStyles.miniButtonRight))
+            {
+                AddNext(nextsProp);
+            }
+
+            rect.y += EditorGUIUtility.singleLineHeight;
+        }
+
+        rect.y += 2;
+
+        // Final Next
+        {
+            Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
+            Rect labelRect = new Rect(rect.x + borderRect.width, rect.y, 40, EditorGUIUtility.singleLineHeight);
+            Rect propRect = new Rect(rect.x + borderRect.width + labelRect.width, rect.y, rect.width - borderRect.width - labelRect.width, EditorGUIUtility.singleLineHeight);
+
+            SerializedProperty finalNextProp = dialogueNodeProp.FindPropertyRelative("m_finalNext");
+
+            EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
+
+            GUIStyle labelStyle = new GUIStyle();
+            labelStyle.normal.background = new Texture2D(1, 1);
+            labelStyle.padding = EditorStyles.miniButtonLeft.padding;
+            labelStyle.alignment = TextAnchor.MiddleLeft;
+            labelStyle.normal.background.SetPixels(new Color[]{ Color.red });
+            labelStyle.normal.background.Apply();
+            labelStyle.normal.textColor = Color.white;
+            GUI.Label(labelRect, "Else", labelStyle);
+
+            DrawDialogueTextLinkageRow(propRect, finalNextProp, 0, GUIContent.none);
+
+            rect.y += EditorGUIUtility.singleLineHeight;
+        }
+
+        rect.y += 2;
 
         rect.y += 10;
 
@@ -361,6 +477,23 @@ public class DialogueEditor : Editor
         height += (2 + DialogueTextRefFieldHeight) * optionsProp.arraySize + 2 + ButtonRowHeight;
 
         // dialoguenode.nexts
+        height += EditorGUIUtility.singleLineHeight + 2;
+
+        SerializedProperty nextsProp = element.FindPropertyRelative("m_nexts");
+        for (int i = 0; i < nextsProp.arraySize; i++)
+        {
+            SerializedProperty nextProp = nextsProp.GetArrayElementAtIndex(i);
+            // if row
+            height += EditorGUIUtility.singleLineHeight + 2;
+            // next row
+            height += EditorGUIUtility.singleLineHeight + 2;
+        }
+
+        // add next button
+        height += EditorGUIUtility.singleLineHeight;
+
+        // final next
+        height += EditorGUIUtility.singleLineHeight + 2;
 
         height += 4;
 
@@ -445,6 +578,21 @@ public class DialogueEditor : Editor
     void DeleteOption(SerializedProperty optionsProp, int index)
     {
         optionsProp.DeleteArrayElementAtIndex(index);
+    }
+
+    void AddNext(SerializedProperty nextsProp)
+    {
+        int index = nextsProp.arraySize;
+        nextsProp.InsertArrayElementAtIndex(index);
+        serializedObject.ApplyModifiedProperties();
+
+        SerializedProperty element = nextsProp.GetArrayElementAtIndex(index);
+        element.FindPropertyRelative("m_next").objectReferenceValue = null;
+    }
+
+    void DeleteNext(SerializedProperty nextsProp, int index)
+    {
+        nextsProp.DeleteArrayElementAtIndex(index);
     }
 
     void DeleteDialogueNode(int index)

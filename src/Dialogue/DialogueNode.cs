@@ -66,6 +66,7 @@ public class DialogueNode
         }
     }
 
+    [SerializeField]
     private DialogueText m_finalNext = null;
 
     public DialogueText finalNext
