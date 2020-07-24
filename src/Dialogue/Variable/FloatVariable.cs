@@ -15,6 +15,19 @@ public class FloatVariable : Variable
     {
         return "Float";
     }
+
+    public override ConditionOperation[] GetAvailableOperations()
+    {
+        return new ConditionOperation[]
+        {
+            ConditionOperation.EQUAL,
+            ConditionOperation.NOT_EQUAL,
+            ConditionOperation.GREATER_THAN,
+            ConditionOperation.GREATER_THAN_OR_EQUAL,
+            ConditionOperation.LESS_THEN,
+            ConditionOperation.LESS_THAN_OR_EQUAL
+        };
+    }
 }
 
 }

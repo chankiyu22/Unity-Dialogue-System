@@ -15,6 +15,15 @@ public class StringVariable : Variable
     {
         return "String";
     }
+
+    public override ConditionOperation[] GetAvailableOperations()
+    {
+        return new ConditionOperation[]
+        {
+            ConditionOperation.EQUAL,
+            ConditionOperation.NOT_EQUAL,
+        };
+    }
 }
 
 }

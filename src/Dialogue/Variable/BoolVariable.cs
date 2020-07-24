@@ -15,6 +15,15 @@ public class BoolVariable : Variable
     {
         return "Boolean";
     }
+
+    public override ConditionOperation[] GetAvailableOperations()
+    {
+        return new ConditionOperation[]
+        {
+            ConditionOperation.EQUAL,
+            ConditionOperation.NOT_EQUAL,
+        };
+    }
 }
 
 }

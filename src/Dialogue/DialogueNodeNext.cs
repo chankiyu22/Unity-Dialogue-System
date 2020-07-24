@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Chankiyu22.DialogueSystem.Dialogues
@@ -9,13 +10,13 @@ public class DialogueNodeNext
 {
     // Condition
     [SerializeField]
-    private Condition m_condition = null;
+    private List<Condition> m_conditions = new List<Condition>();
 
-    public Condition condition
+    public List<Condition> conditions
     {
         get
         {
-            return m_condition;
+            return m_conditions;
         }
     }
 

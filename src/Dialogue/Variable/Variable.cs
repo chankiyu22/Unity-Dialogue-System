@@ -28,6 +28,7 @@ public abstract class Variable : ScriptableObject
         }
     }
 
+    public abstract ConditionOperation[] GetAvailableOperations();
 }
 
 }

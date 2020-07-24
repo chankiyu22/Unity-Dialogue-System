@@ -20,6 +20,7 @@ public class DialogueEditor : Editor
     List<DialogueText> m_unusedDialogueTexts = new List<DialogueText>();
 
     VariableAssignmentListPropertyDrawerManager variableAssignmentListPropertyDrawerManager = new VariableAssignmentListPropertyDrawerManager();
+    ConditionReorderableListManager conditionReorderableListManager = new ConditionReorderableListManager();
 
     float DialogueTextRefFieldHeight
     {
@@ -288,7 +289,11 @@ public class DialogueEditor : Editor
 
             // Condition
             {
-                Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
+                SerializedProperty conditionsProp = nextProp.FindPropertyRelative("m_conditions");
+                ConditionReorderableList conditionReorderableList = conditionReorderableListManager.GetReorderableList(conditionsProp);
+                float conditionReorderableListHeight = conditionReorderableList.GetHeight();
+
+                Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, conditionReorderableListHeight + 2);
                 Rect ifLabelRect = new Rect(rect.x + borderRect.width, rect.y, 40, EditorGUIUtility.singleLineHeight);
                 Rect deleteButtonRect = new Rect(rect.xMax - 60, rect.y, 60, EditorGUIUtility.singleLineHeight);
 
@@ -303,13 +308,16 @@ public class DialogueEditor : Editor
                 ifLabelStyle.normal.textColor = Color.white;
                 GUI.Label(ifLabelRect, "If", ifLabelStyle);
 
+                Rect conditionReorderableListRect = new Rect(rect.x + borderRect.width + ifLabelRect.width, rect.y, rect.width - borderRect.width - ifLabelRect.width - deleteButtonRect.width, conditionReorderableListHeight);
+                conditionReorderableList.DoList(conditionReorderableListRect);
+
                 if (GUI.Button(deleteButtonRect, "De|ete", EditorStyles.miniButton))
                 {
                     DeleteNext(nextsProp, i);
                     return;
                 }
 
-                rect.y += EditorGUIUtility.singleLineHeight;
+                rect.y += conditionReorderableListHeight;
                 rect.y += 2;
             }
 
@@ -483,8 +491,13 @@ public class DialogueEditor : Editor
         for (int i = 0; i < nextsProp.arraySize; i++)
         {
             SerializedProperty nextProp = nextsProp.GetArrayElementAtIndex(i);
+
             // if row
-            height += EditorGUIUtility.singleLineHeight + 2;
+            SerializedProperty conditionsProp = nextProp.FindPropertyRelative("m_conditions");
+            ConditionReorderableList conditionReorderableList = conditionReorderableListManager.GetReorderableList(conditionsProp);
+            float conditionReorderableListHeight = conditionReorderableList.GetHeight();
+            height += conditionReorderableListHeight + 2;
+
             // next row
             height += EditorGUIUtility.singleLineHeight + 2;
         }
