@@ -30,19 +30,6 @@ public class DialogueNode
         }
     }
 
-    // DIALOGUE TEXT
-    [SerializeField]
-    private DialogueText m_next = null;
-
-    public DialogueText next
-    {
-        get
-        {
-            return m_next;
-        }
-    }
-
-
     // DIALOGUE_OPTIONS
     [SerializeField]
     private List<DialogueOption> m_options = null;

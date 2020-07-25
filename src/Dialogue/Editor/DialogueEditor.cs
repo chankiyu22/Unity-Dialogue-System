@@ -208,8 +208,6 @@ public class DialogueEditor : Editor
             SerializedProperty nextDialogueOptionProp = nextDialogueOptionsProp.GetArrayElementAtIndex(i);
             SerializedProperty optionTextProp = nextDialogueOptionProp.FindPropertyRelative("m_dialogueOptionText");
             DialogueOptionText optionText = (DialogueOptionText) optionTextProp.objectReferenceValue;
-            SerializedProperty optionNextProp = nextDialogueOptionProp.FindPropertyRelative("m_next");
-            DialogueText optionNextText = (DialogueText) optionNextProp.objectReferenceValue;
 
             EditorGUIUtility.labelWidth = 20.0f;
             EditorGUI.DrawRect(new Rect(rect.x, rect.y - 2, DialogueTextRefFieldHeight + 2, DialogueTextRefFieldHeight + 2), new Color(0.3f, 0.3f, 0.3f));
@@ -537,9 +535,9 @@ public class DialogueEditor : Editor
 
         SerializedProperty element = l.serializedProperty.GetArrayElementAtIndex(index);
         element.FindPropertyRelative("m_dialogueText").objectReferenceValue = null;
-        element.FindPropertyRelative("m_nextOption").enumValueIndex = 0;
-        element.FindPropertyRelative("m_next").objectReferenceValue = null;
         element.FindPropertyRelative("m_options").arraySize = 0;
+        element.FindPropertyRelative("m_nexts").arraySize = 0;
+        element.FindPropertyRelative("m_finalNext").objectReferenceValue = null;
     }
 
     void Add(ReorderableList l, DialogueText dialogueText)
@@ -551,9 +549,9 @@ public class DialogueEditor : Editor
 
         SerializedProperty element = l.serializedProperty.GetArrayElementAtIndex(index);
         element.FindPropertyRelative("m_dialogueText").objectReferenceValue = dialogueText;
-        element.FindPropertyRelative("m_nextOption").enumValueIndex = 0;
-        element.FindPropertyRelative("m_next").objectReferenceValue = null;
         element.FindPropertyRelative("m_options").arraySize = 0;
+        element.FindPropertyRelative("m_nexts").arraySize = 0;
+        element.FindPropertyRelative("m_finalNext").objectReferenceValue = null;
     }
 
     void AddDropdown(Rect buttonRect, ReorderableList l)
@@ -585,7 +583,7 @@ public class DialogueEditor : Editor
 
         SerializedProperty element = optionsProp.GetArrayElementAtIndex(index);
         element.FindPropertyRelative("m_dialogueOptionText").objectReferenceValue = null;
-        element.FindPropertyRelative("m_next").objectReferenceValue = null;
+        element.FindPropertyRelative("m_assignments").arraySize = 0;
     }
 
     void DeleteOption(SerializedProperty optionsProp, int index)
@@ -600,6 +598,7 @@ public class DialogueEditor : Editor
         serializedObject.ApplyModifiedProperties();
 
         SerializedProperty element = nextsProp.GetArrayElementAtIndex(index);
+        element.FindPropertyRelative("m_conditions").arraySize = 0;
         element.FindPropertyRelative("m_next").objectReferenceValue = null;
     }
 

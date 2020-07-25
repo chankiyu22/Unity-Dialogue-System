@@ -142,14 +142,6 @@ public class Dialogue : ScriptableObject
                 dialogueTextsFromNode.Add(dialogueNode.dialogueText);
             }
 
-            foreach (DialogueOption dialogueOption in dialogueNode.options)
-            {
-                if (dialogueOption.next != null)
-                {
-                    dialogueTextsFromNextText.Add(dialogueOption.next);
-                }
-            }
-
             foreach (DialogueNodeNext dialogueNodeNext in dialogueNode.nexts)
             {
                 if (dialogueNodeNext.next != null)
@@ -157,9 +149,10 @@ public class Dialogue : ScriptableObject
                     dialogueTextsFromNextText.Add(dialogueNodeNext.next);
                 }
             }
-            if (dialogueNode.next != null)
+
+            if (dialogueNode.finalNext != null)
             {
-                dialogueTextsFromNextText.Add(dialogueNode.next);
+                dialogueTextsFromNextText.Add(dialogueNode.finalNext);
             }
         }
 

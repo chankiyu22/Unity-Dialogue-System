@@ -29,17 +29,6 @@ public class DialogueOption
             return m_assignments;
         }
     }
-
-    [SerializeField]
-    private DialogueText m_next = null;
-
-    public DialogueText next
-    {
-        get
-        {
-            return m_next;
-        }
-    }
 }
 
 }
