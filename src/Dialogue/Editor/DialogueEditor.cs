@@ -318,6 +318,15 @@ public class DialogueEditor : Editor
 
         if (dialogueText == null)
         {
+            Rect coverRect = new Rect(rect.x + labelWidth, rect.y, rect.width - 80 - labelWidth, rect.height);
+            GUIStyle coverStyle = new GUIStyle();
+            coverStyle.normal.background = new Texture2D(1, 1);
+            coverStyle.padding = EditorStyles.miniButtonLeft.padding;
+            coverStyle.alignment = TextAnchor.MiddleLeft;
+            coverStyle.normal.background.SetPixels(new Color[]{ Color.red });
+            coverStyle.normal.background.Apply();
+            coverStyle.normal.textColor = Color.white;
+            GUI.Label(coverRect, "End", coverStyle);
             if (GUI.Button(new Rect(rect.xMax - 60, rect.y, 60, rect.height), "New", rightButtonStyle))
             {
                 DialogueText newDialogueText = PromptToCreate<DialogueText>("New Dialogue Text", "Dialogue Text");
