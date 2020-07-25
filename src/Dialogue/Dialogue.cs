@@ -43,6 +43,14 @@ public class Dialogue : ScriptableObject
 
     private Dictionary<Variable, VariableValue> m_variableValues = new Dictionary<Variable, VariableValue>();
 
+    public Dictionary<Variable, VariableValue> variableValues
+    {
+        get
+        {
+            return m_variableValues;
+        }
+    }
+
     public void InitializeVariableValues()
     {
         m_variableValues.Clear();

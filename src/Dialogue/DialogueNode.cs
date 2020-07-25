@@ -76,6 +76,18 @@ public class DialogueNode
             return m_finalNext;
         }
     }
+
+    public DialogueText GetNextDialogueText(Dictionary<Variable, VariableValue> variableValues)
+    {
+        foreach (DialogueNodeNext dialogueNodeNext in m_nexts)
+        {
+            if (dialogueNodeNext.EvaluateCondition(variableValues))
+            {
+                return dialogueNodeNext.next;
+            }
+        }
+        return m_finalNext;
+    }
 }
 
 }

@@ -115,15 +115,24 @@ public class DialogueController : MonoBehaviour
             }
             else
             {
-                m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == m_currentDialogueNode.next);
-                if (m_currentDialogueNode == null)
+                DialogueText nextDialogueText = m_currentDialogueNode.GetNextDialogueText(m_dialogue.variableValues);
+                if (nextDialogueText == null)
                 {
-                    Debug.LogWarning("Next is dialogue text but no dialogue text found", this);
+                    Debug.LogWarning("No next dialogue text evaluated valid", this);
                     EndDialogue();
                 }
                 else
                 {
-                    EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
+                    m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == nextDialogueText);
+                    if (m_currentDialogueNode == null)
+                    {
+                        Debug.LogWarning("Next is dialogue text but no dialogue text found", this);
+                        EndDialogue();
+                    }
+                    else
+                    {
+                        EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
+                    }
                 }
             }
         }
@@ -153,7 +162,17 @@ public class DialogueController : MonoBehaviour
             return;
         }
 
-        DialogueNode dialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == selectedOption.next);
+        EmitDialogueOptionsEnd(dialogueOptions);
+        m_dialogue.ApplyVariableValues(selectedOption.assignments);
+
+        DialogueText nextDialogueText = m_currentDialogueNode.GetNextDialogueText(m_dialogue.variableValues);
+        if (nextDialogueText == null)
+        {
+            Debug.LogWarning("No next dialogue text evaluated valid", this);
+            EndDialogue();
+        }
+
+        DialogueNode dialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == nextDialogueText);
 
         if (dialogueNode == null)
         {
@@ -162,8 +181,6 @@ public class DialogueController : MonoBehaviour
         }
 
         m_currentDialogueNode = dialogueNode;
-        EmitDialogueOptionsEnd(dialogueOptions);
-        m_dialogue.ApplyVariableValues(selectedOption.assignments);
         EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
 

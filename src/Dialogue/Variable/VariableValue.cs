@@ -8,9 +8,37 @@ public class VariableValue
     private Variable m_variable;
 
     private int m_intValue;
+    public int intValue
+    {
+        get
+        {
+            return m_intValue;
+        }
+    }
     private float m_floatValue;
+    public float floatValue
+    {
+        get
+        {
+            return m_floatValue;
+        }
+    }
     private bool m_boolValue;
+    public bool boolValue
+    {
+        get
+        {
+            return m_boolValue;
+        }
+    }
     private string m_stringValue;
+    public string stringValue
+    {
+        get
+        {
+            return m_stringValue;
+        }
+    }
 
     public VariableValue(IntVariable variable, int intValue)
     {

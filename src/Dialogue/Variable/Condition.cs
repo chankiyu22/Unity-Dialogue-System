@@ -102,6 +102,70 @@ public class Condition
         }
         return "";
     }
+
+    public bool Evaluate(int intValue)
+    {
+        switch (m_operation)
+        {
+            case ConditionOperation.EQUAL:
+                return m_intValue == intValue;
+            case ConditionOperation.NOT_EQUAL:
+                return m_intValue != intValue;
+            case ConditionOperation.GREATER_THAN:
+                return m_intValue > intValue;
+            case ConditionOperation.GREATER_THAN_OR_EQUAL:
+                return m_intValue >= intValue;
+            case ConditionOperation.LESS_THEN:
+                return m_intValue < intValue;
+            case ConditionOperation.LESS_THAN_OR_EQUAL:
+                return m_intValue <= intValue;
+        }
+        return false;
+    }
+
+    public bool Evaluate(float floatValue)
+    {
+        switch (m_operation)
+        {
+            case ConditionOperation.EQUAL:
+                return m_floatValue == floatValue;
+            case ConditionOperation.NOT_EQUAL:
+                return m_floatValue != floatValue;
+            case ConditionOperation.GREATER_THAN:
+                return m_floatValue > floatValue;
+            case ConditionOperation.GREATER_THAN_OR_EQUAL:
+                return m_floatValue >= floatValue;
+            case ConditionOperation.LESS_THEN:
+                return m_floatValue < floatValue;
+            case ConditionOperation.LESS_THAN_OR_EQUAL:
+                return m_floatValue <= floatValue;
+        }
+        return false;
+    }
+
+    public bool Evaluate(bool boolValue)
+    {
+        switch (m_operation)
+        {
+            case ConditionOperation.EQUAL:
+                return m_boolValue == boolValue;
+            case ConditionOperation.NOT_EQUAL:
+                return m_boolValue != boolValue;
+        }
+        return false;
+    }
+
+    public bool Evaluate(string stringValue)
+    {
+        switch (m_operation)
+        {
+            case ConditionOperation.EQUAL:
+                return m_stringValue == stringValue;
+            case ConditionOperation.NOT_EQUAL:
+                return m_stringValue != stringValue;
+        }
+        return false;
+    }
 }
 
 }
