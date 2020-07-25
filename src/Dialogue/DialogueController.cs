@@ -82,16 +82,20 @@ public class DialogueController : MonoBehaviour
     //       Add method StartText and EndText to emit text begin and end events.
     public void StartText()
     {
-        m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == m_dialogue.beginText);
-        if (m_currentDialogueNode != null)
+        DialogueText beginText = m_dialogue.GetBeginText();
+        if (beginText == null)
         {
-            EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
+            Debug.LogWarning("No begin dialogue text found", this);
+            EndDialogue();
+            return;
         }
-        else
+        m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == beginText);
+        if (m_currentDialogueNode == null)
         {
             Debug.LogWarning("No begin dialogue text found", this);
             EndDialogue();
         }
+        EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
 
     public void Next()

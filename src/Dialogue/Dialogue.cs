@@ -9,13 +9,25 @@ namespace Chankiyu22.DialogueSystem.Dialogues
 [CreateAssetMenu(menuName="Dialogue System/Dialogue/Dialogue")]
 public class Dialogue : ScriptableObject
 {
+
     [SerializeField]
-    private DialogueText m_beginText = null;
-    public DialogueText beginText
+    private List<DialogueNodeNext> m_beginTexts = new List<DialogueNodeNext>();
+
+    public List<DialogueNodeNext> beginTexts
     {
         get
         {
-            return m_beginText;
+            return m_beginTexts;
+        }
+    }
+
+    [SerializeField]
+    private DialogueText m_finalBeginText = null;
+    public DialogueText finalBeginText
+    {
+        get
+        {
+            return m_finalBeginText;
         }
     }
 
@@ -55,6 +67,18 @@ public class Dialogue : ScriptableObject
     {
         m_variableValues.Clear();
         ApplyVariableValues(m_dialogueVariables);
+    }
+
+    public DialogueText GetBeginText()
+    {
+        foreach (DialogueNodeNext dialogueNodeNext in m_beginTexts)
+        {
+            if (dialogueNodeNext.EvaluateCondition(variableValues))
+            {
+                return dialogueNodeNext.next;
+            }
+        }
+        return m_finalBeginText;
     }
 
     public void ApplyVariableValues(List<VariableAssignment> assignments)
@@ -130,9 +154,17 @@ public class Dialogue : ScriptableObject
         List<DialogueText> dialogueTextsFromNextText = new List<DialogueText>();
         List<DialogueText> dialogueTextsFromOptionNextText =new List<DialogueText>();
 
-        if (beginText != null)
+        foreach (DialogueNodeNext beginTextNext in m_beginTexts)
         {
-            dialogueTextsFromBeginText.Add(beginText);
+            if (beginTextNext.next != null)
+            {
+                dialogueTextsFromBeginText.Add(beginTextNext.next);
+            }
+        }
+
+        if (m_finalBeginText != null)
+        {
+            dialogueTextsFromBeginText.Add(m_finalBeginText);
         }
 
         foreach (DialogueNode dialogueNode in dialogueNodes)

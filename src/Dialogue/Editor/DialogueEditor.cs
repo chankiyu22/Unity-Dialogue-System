@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -21,6 +22,7 @@ public class DialogueEditor : Editor
 
     VariableAssignmentListPropertyDrawerManager variableAssignmentListPropertyDrawerManager = new VariableAssignmentListPropertyDrawerManager();
     ConditionReorderableListManager conditionReorderableListManager = new ConditionReorderableListManager();
+    DialogueNodeNextListPropertyDrawer m_dialogueNodeNextListPropertyDrawer;
 
     float DialogueTextRefFieldHeight
     {
@@ -56,6 +58,8 @@ public class DialogueEditor : Editor
         dialogueNodeReorderableList.onRemoveCallback = RemoveDialogueNodeElement;
         dialogueNodeReorderableList.drawHeaderCallback = DrawDialogueNodeListHeader;
 
+        m_dialogueNodeNextListPropertyDrawer = new DialogueNodeNextListPropertyDrawer(conditionReorderableListManager, DrawDialogueTextLinkageRow);
+
         SerializedProperty dialogueVariableListProp = serializedObject.FindProperty("m_dialogueVariables");
         dialogueVariableReorderableList = new DialogueVariableReorderableList(serializedObject, dialogueVariableListProp);
     }
@@ -67,23 +71,26 @@ public class DialogueEditor : Editor
         (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialogueTexts) = dialogue.GetUnreferencedDialoguedTextAndUnusedNodes();
         m_undefinedDialogueTexts = undefinedDialogueTexts;
         m_unusedDialogueTexts = unusedDialogueTexts;
-        DrawBeginTextField();
 
         SerializedProperty dialogueVariableListProp = serializedObject.FindProperty("m_dialogueVariables");
         dialogueVariableReorderableList.DoLayoutList();
+
+        SerializedProperty beginTextsProp = serializedObject.FindProperty("m_beginTexts");
+        SerializedProperty finalBeginTextProp = serializedObject.FindProperty("m_finalBeginText");
+        float beginTextsHeight = m_dialogueNodeNextListPropertyDrawer.GetHeight(beginTextsProp);
+        Rect beginTextsRect = EditorGUILayout.GetControlRect(false, beginTextsHeight);
+        m_dialogueNodeNextListPropertyDrawer.DrawDialogueNodeNexts(
+            beginTextsRect,
+            beginTextsProp,
+            finalBeginTextProp,
+            "Begin Texts");
+
+        EditorGUILayout.Space();
+
         dialogueNodeReorderableList.DoLayoutList();
         serializedObject.ApplyModifiedProperties();
     }
 
-    void DrawBeginTextField()
-    {
-        SerializedProperty beginTextProp = serializedObject.FindProperty("m_beginText");
-        DialogueText beginText = (DialogueText) beginTextProp.objectReferenceValue;
-        Rect rect = EditorGUILayout.GetControlRect(true, EditorGUIUtility.singleLineHeight);
-        EditorGUI.BeginProperty(rect, new GUIContent("Begin Text"), beginTextProp);
-        DrawDialogueTextLinkageRow(new Rect(rect.x, rect.y, rect.width, rect.height), beginTextProp, EditorGUIUtility.labelWidth, new GUIContent("Begin Text"));
-        EditorGUI.EndProperty();
-    }
 
     void DrawDialogueNodeListHeader(Rect rect)
     {
@@ -100,8 +107,8 @@ public class DialogueEditor : Editor
 
         float prevLabelWidth = EditorGUIUtility.labelWidth;
 
-        SerializedProperty beginTextProp = serializedObject.FindProperty("m_beginText");
-        DialogueText beginText = (DialogueText) beginTextProp.objectReferenceValue;
+        SerializedProperty finalBeginTextProp = serializedObject.FindProperty("m_finalBeginText");
+        DialogueText finalBeginText = (DialogueText) finalBeginTextProp.objectReferenceValue;
         SerializedProperty dialogueNodeProp = dialogueNodeReorderableList.serializedProperty.GetArrayElementAtIndex(index);
         SerializedProperty dialogueTextProp = dialogueNodeProp.FindPropertyRelative("m_dialogueText");
         DialogueText dialogueText = (DialogueText) dialogueTextProp.objectReferenceValue;
@@ -129,11 +136,11 @@ public class DialogueEditor : Editor
             EditorGUI.PropertyField(dialogueTextRowColumn1Rect, dialogueTextProp, GUIContent.none);
         }
         if (dialogueText != null) {
-            bool isBeginText = dialogueText == beginText;
+            bool isBeginText = dialogueText == finalBeginText;
             EditorGUI.BeginDisabledGroup(isBeginText);
             if (GUI.Button(dialogueTextRowColumn2Rect, isBeginText ? "Begin Text" : "As Begin Text", isUnused ? EditorStyles.miniButtonMid : EditorStyles.miniButtonLeft))
             {
-                beginTextProp.objectReferenceValue = dialogueText;
+                finalBeginTextProp.objectReferenceValue = dialogueText;
             }
             EditorGUI.EndDisabledGroup();
             if (GUI.Button(dialogueTextRowColumn3Rect, "De|ete", EditorStyles.miniButtonRight))
@@ -265,126 +272,15 @@ public class DialogueEditor : Editor
 
         rect.y += 2;
 
-        // dialoguenode.nexts
-        GUIStyle nextsHeaderStyle = new GUIStyle();
-        nextsHeaderStyle.normal.background = new Texture2D(1, 1);
-        nextsHeaderStyle.padding = EditorStyles.miniButtonLeft.padding;
-        nextsHeaderStyle.alignment = TextAnchor.MiddleLeft;
-        nextsHeaderStyle.normal.background.SetPixels(new Color[]{ new Color(0.3f, 0.3f, 0.3f) });
-        nextsHeaderStyle.normal.background.Apply();
-        nextsHeaderStyle.normal.textColor = Color.white;
-        Rect nextsHeaderRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
-        GUI.Label(nextsHeaderRect, "Branches", nextsHeaderStyle);
-
-        rect.y += nextsHeaderRect.height;
-
-        rect.y += 2;
-
         SerializedProperty nextsProp = dialogueNodeProp.FindPropertyRelative("m_nexts");
-        for (int i = 0; i < nextsProp.arraySize; i++)
-        {
-            SerializedProperty nextProp = nextsProp.GetArrayElementAtIndex(i);
-
-            // Condition
-            {
-                SerializedProperty conditionsProp = nextProp.FindPropertyRelative("m_conditions");
-                ConditionReorderableList conditionReorderableList = conditionReorderableListManager.GetReorderableList(conditionsProp);
-                float conditionReorderableListHeight = conditionReorderableList.GetHeight();
-
-                Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, conditionReorderableListHeight + 2);
-                Rect ifLabelRect = new Rect(rect.x + borderRect.width, rect.y, 40, EditorGUIUtility.singleLineHeight);
-                Rect deleteButtonRect = new Rect(rect.xMax - 60, rect.y, 60, EditorGUIUtility.singleLineHeight);
-
-                EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
-
-                GUIStyle ifLabelStyle = new GUIStyle();
-                ifLabelStyle.normal.background = new Texture2D(1, 1);
-                ifLabelStyle.padding = EditorStyles.miniButtonLeft.padding;
-                ifLabelStyle.alignment = TextAnchor.MiddleLeft;
-                ifLabelStyle.normal.background.SetPixels(new Color[]{ new Color(0.3f, 0.3f, 0.3f) });
-                ifLabelStyle.normal.background.Apply();
-                ifLabelStyle.normal.textColor = Color.white;
-                GUI.Label(ifLabelRect, "If", ifLabelStyle);
-
-                Rect conditionReorderableListRect = new Rect(rect.x + borderRect.width + ifLabelRect.width, rect.y, rect.width - borderRect.width - ifLabelRect.width - deleteButtonRect.width, conditionReorderableListHeight);
-                conditionReorderableList.DoList(conditionReorderableListRect);
-
-                if (GUI.Button(deleteButtonRect, "De|ete", EditorStyles.miniButton))
-                {
-                    DeleteNext(nextsProp, i);
-                    return;
-                }
-
-                rect.y += conditionReorderableListHeight;
-                rect.y += 2;
-            }
-
-            // Next Dialogue Text
-            {
-                Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
-                float indent = 20;
-                Rect propRect = new Rect(rect.x + borderRect.width + indent, rect.y, rect.width - borderRect.width - indent, EditorGUIUtility.singleLineHeight);
-
-                SerializedProperty nextDialogueTextProp = nextProp.FindPropertyRelative("m_next");
-
-                EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
-                DrawDialogueTextLinkageRow(propRect, nextDialogueTextProp, 20, new GUIContent("\u2192"));
-
-                rect.y += EditorGUIUtility.singleLineHeight;
-                rect.y += 2;
-            }
-        }
-
-        // New Next
-        {
-            Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
-            Rect labelRect = new Rect(rect.x + borderRect.width, rect.y, 40, EditorGUIUtility.singleLineHeight);
-            Rect buttonRect = new Rect(rect.x + borderRect.width + labelRect.width, rect.y, rect.width - borderRect.width - labelRect.width, EditorGUIUtility.singleLineHeight);
-
-            EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
-
-            GUIStyle labelStyle = new GUIStyle();
-            labelStyle.normal.background = new Texture2D(1, 1);
-            labelStyle.padding = EditorStyles.miniButtonLeft.padding;
-            labelStyle.alignment = TextAnchor.MiddleLeft;
-            labelStyle.normal.background.SetPixels(new Color[]{ new Color(0.5f, 0.5f, 0.5f) });
-            labelStyle.normal.background.Apply();
-            labelStyle.normal.textColor = Color.white;
-            GUI.Label(labelRect, "If", labelStyle);
-
-            if (GUI.Button(buttonRect, "New Branch", EditorStyles.miniButtonRight))
-            {
-                AddNext(nextsProp);
-            }
-
-            rect.y += EditorGUIUtility.singleLineHeight;
-        }
-
-        rect.y += 2;
-
-        // Final Next
-        {
-            Rect borderRect = new Rect(rect.x, rect.y - 2, EditorGUIUtility.singleLineHeight + 2, EditorGUIUtility.singleLineHeight + 2);
-            Rect labelRect = new Rect(rect.x + borderRect.width, rect.y, 40, EditorGUIUtility.singleLineHeight);
-            Rect propRect = new Rect(rect.x + borderRect.width + labelRect.width, rect.y, rect.width - borderRect.width - labelRect.width, EditorGUIUtility.singleLineHeight);
-
-            SerializedProperty finalNextProp = dialogueNodeProp.FindPropertyRelative("m_finalNext");
-
-            EditorGUI.DrawRect(borderRect, new Color(0.3f, 0.3f, 0.3f));
-
-            GUIStyle labelStyle = new GUIStyle();
-            labelStyle.normal.background = new Texture2D(1, 1);
-            labelStyle.padding = EditorStyles.miniButtonLeft.padding;
-            labelStyle.alignment = TextAnchor.MiddleLeft;
-            labelStyle.normal.background.SetPixels(new Color[]{ Color.red });
-            labelStyle.normal.background.Apply();
-            labelStyle.normal.textColor = Color.white;
-            GUI.Label(labelRect, "Else", labelStyle);
-
-            DrawDialogueTextLinkageRow(propRect, finalNextProp, 0, GUIContent.none);
-
-            rect.y += EditorGUIUtility.singleLineHeight;
-        }
+        SerializedProperty finalNextProp = dialogueNodeProp.FindPropertyRelative("m_finalNext");
+        float nextsHeight = m_dialogueNodeNextListPropertyDrawer.GetHeight(nextsProp);
+        Rect nextsRect = new Rect(rect.x, rect.y, rect.width, nextsHeight);
+        m_dialogueNodeNextListPropertyDrawer.DrawDialogueNodeNexts(
+            nextsRect,
+            nextsProp,
+            finalNextProp,
+            "Branches");
 
         rect.y += 2;
 
@@ -482,29 +378,8 @@ public class DialogueEditor : Editor
         }
         height += (2 + DialogueTextRefFieldHeight) * optionsProp.arraySize + 2 + ButtonRowHeight;
 
-        // dialoguenode.nexts
-        height += EditorGUIUtility.singleLineHeight + 2;
-
         SerializedProperty nextsProp = element.FindPropertyRelative("m_nexts");
-        for (int i = 0; i < nextsProp.arraySize; i++)
-        {
-            SerializedProperty nextProp = nextsProp.GetArrayElementAtIndex(i);
-
-            // if row
-            SerializedProperty conditionsProp = nextProp.FindPropertyRelative("m_conditions");
-            ConditionReorderableList conditionReorderableList = conditionReorderableListManager.GetReorderableList(conditionsProp);
-            float conditionReorderableListHeight = conditionReorderableList.GetHeight();
-            height += conditionReorderableListHeight + 2;
-
-            // next row
-            height += EditorGUIUtility.singleLineHeight + 2;
-        }
-
-        // add next button
-        height += EditorGUIUtility.singleLineHeight;
-
-        // final next
-        height += EditorGUIUtility.singleLineHeight + 2;
+        height += m_dialogueNodeNextListPropertyDrawer.GetHeight(nextsProp) + 2;
 
         height += 4;
 
