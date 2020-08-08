@@ -24,6 +24,8 @@ public class DialogueEditor : Editor
     ConditionReorderableListManager conditionReorderableListManager = new ConditionReorderableListManager();
     DialogueNodeNextListPropertyDrawer m_dialogueNodeNextListPropertyDrawer;
 
+    public Rect viewportRect = Rect.zero;
+
     float DialogueTextRefFieldHeight
     {
         get
@@ -72,22 +74,34 @@ public class DialogueEditor : Editor
         m_undefinedDialogueTexts = undefinedDialogueTexts;
         m_unusedDialogueTexts = unusedDialogueTexts;
 
-        SerializedProperty dialogueVariableListProp = serializedObject.FindProperty("m_dialogueVariables");
-        dialogueVariableReorderableList.DoLayoutList();
+        Rect dialogueVariableReorderableListRect = EditorGUILayout.GetControlRect(false, dialogueVariableReorderableList.GetHeight());
+        if (isRectInViewport(dialogueVariableReorderableListRect))
+        {
+            dialogueVariableReorderableList.DoList(dialogueVariableReorderableListRect);
+        }
 
         SerializedProperty beginTextsProp = serializedObject.FindProperty("m_beginTexts");
         SerializedProperty finalBeginTextProp = serializedObject.FindProperty("m_finalBeginText");
         float beginTextsHeight = m_dialogueNodeNextListPropertyDrawer.GetHeight(beginTextsProp);
         Rect beginTextsRect = EditorGUILayout.GetControlRect(false, beginTextsHeight);
-        m_dialogueNodeNextListPropertyDrawer.DrawDialogueNodeNexts(
-            beginTextsRect,
-            beginTextsProp,
-            finalBeginTextProp,
-            "Begin Texts");
+
+        if (isRectInViewport(beginTextsRect))
+        {
+            m_dialogueNodeNextListPropertyDrawer.DrawDialogueNodeNexts(
+                beginTextsRect,
+                beginTextsProp,
+                finalBeginTextProp,
+                "Begin Texts");
+        }
 
         EditorGUILayout.Space();
 
-        dialogueNodeReorderableList.DoLayoutList();
+        Rect dialogueNodeReorderableListRect = EditorGUILayout.GetControlRect(false, dialogueNodeReorderableList.GetHeight());
+        if (isRectInViewport(dialogueNodeReorderableListRect))
+        {
+            dialogueNodeReorderableList.DoList(dialogueNodeReorderableListRect);
+        }
+
         serializedObject.ApplyModifiedProperties();
     }
 
@@ -99,6 +113,9 @@ public class DialogueEditor : Editor
 
     void DrawDialogueNodeElement(Rect rect, int index, bool isActive, bool isFocus)
     {
+        if (!isRectInViewport(rect)) {
+            return;
+        }
         // Handle delete intermediate elements by code
         if (index >= dialogueNodeReorderableList.serializedProperty.arraySize)
         {
@@ -517,6 +534,22 @@ public class DialogueEditor : Editor
             return asset;
         }
         return null;
+    }
+
+    bool isRectInViewport(Rect rect)
+    {
+        if (viewportRect != Rect.zero)
+        {
+            if (rect.y > viewportRect.y + viewportRect.height)
+            {
+                return false;
+            }
+            if (rect.y + rect.height < viewportRect.y)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

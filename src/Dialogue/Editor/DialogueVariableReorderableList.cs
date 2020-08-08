@@ -5,26 +5,17 @@ using UnityEditorInternal;
 namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
-public class DialogueVariableReorderableList
+public class DialogueVariableReorderableList : ReorderableList
 {
-    ReorderableList reorderableList;
-    SerializedObject serializedObject;
-    SerializedProperty serializedProperty;
 
     public DialogueVariableReorderableList(SerializedObject serializedObject, SerializedProperty elements)
+        : base(serializedObject, elements)
     {
-        this.reorderableList = new ReorderableList(serializedObject, elements);
-        this.serializedObject = serializedObject;
         this.serializedProperty = elements;
 
-        this.reorderableList.drawElementCallback = DrawElement;
-        this.reorderableList.onAddCallback = Add;
-        this.reorderableList.drawHeaderCallback = DrawHeader;
-    }
-
-    public void DoLayoutList()
-    {
-        reorderableList.DoLayoutList();
+        this.drawElementCallback = DrawElement;
+        this.onAddCallback = Add;
+        this.drawHeaderCallback = DrawHeader;
     }
 
     void DrawElement(Rect rect, int index, bool isActive, bool isFocus)

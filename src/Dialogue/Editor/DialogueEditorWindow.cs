@@ -8,14 +8,14 @@ namespace Chankiyu22.DialogueSystem.Dialogues
 public class DialogueEditorWindow : EditorWindow
 {
     private Dialogue m_dialogue = null;
-    private Editor m_dialogueEditor = null;
+    private DialogueEditor m_dialogueEditor = null;
     private Vector2 m_scrollPos;
 
     public static void InitWindow(Dialogue dialogue)
     {
         DialogueEditorWindow window = GetWindow<DialogueEditorWindow>(true, "Dialogue Editor");
         window.m_dialogue = dialogue;
-        window.m_dialogueEditor = Editor.CreateEditor(dialogue);
+        window.m_dialogueEditor = (DialogueEditor) Editor.CreateEditor(dialogue);
         window.Show();
     }
 
@@ -26,7 +26,9 @@ public class DialogueEditorWindow : EditorWindow
             EditorGUILayout.ObjectField(m_dialogue, typeof(Dialogue), false);
         }
 
-        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height - EditorGUIUtility.singleLineHeight - 2));
+        float scrollTopOffset = EditorGUIUtility.singleLineHeight + 2;
+        m_scrollPos = EditorGUILayout.BeginScrollView(m_scrollPos, GUILayout.Width(position.width), GUILayout.Height(position.height - scrollTopOffset));
+        m_dialogueEditor.viewportRect = new Rect(m_scrollPos.x, m_scrollPos.y, position.width, position.height - scrollTopOffset);
         m_dialogueEditor.OnInspectorGUI();
         EditorGUILayout.Space();
         EditorGUILayout.EndScrollView();
