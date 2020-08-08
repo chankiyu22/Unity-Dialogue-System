@@ -5,7 +5,7 @@ using UnityEditorInternal;
 
 using Chankiyu22.DialogueSystem.Dialogues;
 
-namespace Chankiyu22.DialogueSystem
+namespace Chankiyu22.DialogueSystem.Plots
 {
 
 [CustomEditor(typeof(Plot))]

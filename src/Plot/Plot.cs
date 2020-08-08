@@ -6,7 +6,7 @@ using Chankiyu22.DialogueSystem.Dialogues;
 using Chankiyu22.DialogueSystem.Characters;
 using Chankiyu22.DialogueSystem.Avatars;
 
-namespace Chankiyu22.DialogueSystem
+namespace Chankiyu22.DialogueSystem.Plots
 {
 
 [Serializable]
