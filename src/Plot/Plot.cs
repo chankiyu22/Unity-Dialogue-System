@@ -78,6 +78,14 @@ public class Plot : ScriptableObject
     [SerializeField]
     private Dialogue m_dialogue = null;
 
+    public Dialogue dialogue
+    {
+        get
+        {
+            return m_dialogue;
+        }
+    }
+
     [SerializeField]
     private List<PlotItem> m_plotItems = new List<PlotItem>();
 
