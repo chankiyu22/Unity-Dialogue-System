@@ -16,6 +16,7 @@ public class DialogueEditorWindow : EditorWindow
         DialogueEditorWindow window = GetWindow<DialogueEditorWindow>(true, "Dialogue Editor");
         window.m_dialogue = dialogue;
         window.m_dialogueEditor = (DialogueEditor) Editor.CreateEditor(dialogue);
+        window.m_dialogueEditor.isEditorWindow = true;
         window.Show();
     }
 
