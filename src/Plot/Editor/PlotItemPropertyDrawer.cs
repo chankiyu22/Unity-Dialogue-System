@@ -10,6 +10,8 @@ namespace Chankiyu22.DialogueSystem.Plots
 [CustomPropertyDrawer(typeof(PlotItem))]
 class PlotItemPropertyDrawer : PropertyDrawer
 {
+    PlotAdditionalDataReorderableListManager plotAdditionalDataReorderableListManager = new PlotAdditionalDataReorderableListManager();
+
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         int prevIndent = EditorGUI.indentLevel;
@@ -20,11 +22,13 @@ class PlotItemPropertyDrawer : PropertyDrawer
         SerializedProperty dialogueTextProp = property.FindPropertyRelative("m_dialogueText");
         SerializedProperty avatarTextureSourceProp = property.FindPropertyRelative("m_avatarTextureSource");
 
-        Rect avatarTexturePreviewRect = new Rect(position.x, position.y, 70, position.height - EditorGUIUtility.singleLineHeight * 2 - 8);
-        Rect avatarTextureSourcePropRect = new Rect(position.x, position.yMax - EditorGUIUtility.singleLineHeight * 2 - 6, 70, EditorGUIUtility.singleLineHeight);
-        Rect characterPropRect = new Rect(position.x, position.yMax - EditorGUIUtility.singleLineHeight - 4, 88, EditorGUIUtility.singleLineHeight);
-        Rect dialogueTextPropRect = new Rect(position.x + 72, position.y, position.width - 72, EditorGUIUtility.singleLineHeight);
-        Rect dialogueTextPreviewRect = new Rect(position.x + 72, position.y  + EditorGUIUtility.singleLineHeight + 2, position.width - 72, position.height - EditorGUIUtility.singleLineHeight * 2 - 8);
+        Rect plotDialogueRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight * 7);
+
+        Rect avatarTexturePreviewRect = new Rect(plotDialogueRect.x, plotDialogueRect.y, 70, plotDialogueRect.height - EditorGUIUtility.singleLineHeight * 2 - 8);
+        Rect avatarTextureSourcePropRect = new Rect(plotDialogueRect.x, plotDialogueRect.yMax - EditorGUIUtility.singleLineHeight * 2 - 6, 70, EditorGUIUtility.singleLineHeight);
+        Rect characterPropRect = new Rect(plotDialogueRect.x, plotDialogueRect.yMax - EditorGUIUtility.singleLineHeight - 4, 88, EditorGUIUtility.singleLineHeight);
+        Rect dialogueTextPropRect = new Rect(plotDialogueRect.x + 72, plotDialogueRect.y, plotDialogueRect.width - 72, EditorGUIUtility.singleLineHeight);
+        Rect dialogueTextPreviewRect = new Rect(plotDialogueRect.x + 72, plotDialogueRect.y  + EditorGUIUtility.singleLineHeight + 2, plotDialogueRect.width - 72, plotDialogueRect.height - EditorGUIUtility.singleLineHeight * 2 - 8);
 
         EditorGUI.DrawRect(avatarTexturePreviewRect, Color.grey);
         AvatarTextureSource avatarTextureSource = (AvatarTextureSource) avatarTextureSourceProp.objectReferenceValue;
@@ -47,13 +51,23 @@ class PlotItemPropertyDrawer : PropertyDrawer
             EditorGUI.TextArea(dialogueTextPreviewRect, dialogueText == null ? "" : dialogueText.text, style);
         }
 
+        position.y += EditorGUIUtility.singleLineHeight * 7;
+
+        SerializedProperty additionalDataListProp = property.FindPropertyRelative("m_additionalDataList");
+        PlotAdditionalDataReorderableList plotAdditionalDataReorderableList = plotAdditionalDataReorderableListManager.GetReorderableList(additionalDataListProp);
+
+        Rect additionalDataListRect = new Rect(position.x, position.y, position.width, plotAdditionalDataReorderableList.GetHeight());
+        plotAdditionalDataReorderableList.DoList(additionalDataListRect);
+
         EditorGUI.EndProperty();
         EditorGUI.indentLevel = prevIndent;
     }
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
-        return EditorGUIUtility.singleLineHeight * 7 + 2;
+        SerializedProperty additionalDataListProp = property.FindPropertyRelative("m_additionalDataList");
+        PlotAdditionalDataReorderableList plotAdditionalDataReorderableList = plotAdditionalDataReorderableListManager.GetReorderableList(additionalDataListProp);
+        return EditorGUIUtility.singleLineHeight * 7 + 2 + plotAdditionalDataReorderableList.GetHeight();
     }
 }
 

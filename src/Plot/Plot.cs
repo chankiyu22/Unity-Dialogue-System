@@ -59,9 +59,20 @@ public class PlotItem
             m_avatarTextureSource = value;
         }
     }
+
+    [SerializeField]
+    private List<PlotAdditionalData> m_additionalDataList = new List<PlotAdditionalData>();
+
+    public List<PlotAdditionalData> additionalDataList
+    {
+        get
+        {
+            return m_additionalDataList;
+        }
+    }
 }
 
-[CreateAssetMenu(menuName="Dialogue System/Plot")]
+[CreateAssetMenu(menuName="Dialogue System/Plots/Plot")]
 public class Plot : ScriptableObject
 {
     [SerializeField]
