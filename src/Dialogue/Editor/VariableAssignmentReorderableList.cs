@@ -5,26 +5,18 @@ using UnityEditorInternal;
 namespace Chankiyu22.DialogueSystem.Dialogues
 {
 
-public class VariableAssignmentReorderableList
+public class VariableAssignmentReorderableList : ReorderableList
 {
-    ReorderableList reorderableList;
-    SerializedObject serializedObject;
-    SerializedProperty serializedProperty;
+    string m_header;
 
-    public VariableAssignmentReorderableList(SerializedObject serializedObject, SerializedProperty elements)
+    public VariableAssignmentReorderableList(SerializedObject serializedObject, SerializedProperty serializedProperty, string header)
+        : base(serializedObject, serializedProperty)
     {
-        this.reorderableList = new ReorderableList(serializedObject, elements);
-        this.serializedObject = serializedObject;
-        this.serializedProperty = elements;
+        this.m_header = header;
 
-        this.reorderableList.drawElementCallback = DrawElement;
-        this.reorderableList.onAddCallback = Add;
-        this.reorderableList.drawHeaderCallback = DrawHeader;
-    }
-
-    public void DoLayoutList()
-    {
-        reorderableList.DoLayoutList();
+        this.drawElementCallback = DrawElement;
+        this.onAddCallback = Add;
+        this.drawHeaderCallback = DrawHeader;
     }
 
     void DrawElement(Rect rect, int index, bool isActive, bool isFocus)
@@ -51,7 +43,7 @@ public class VariableAssignmentReorderableList
 
     void DrawHeader(Rect rect)
     {
-        EditorGUI.LabelField(rect, "Update Variables");
+        EditorGUI.LabelField(rect, m_header);
     }
 }
 

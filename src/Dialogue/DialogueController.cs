@@ -77,6 +77,20 @@ public class DialogueController : MonoBehaviour
         EmitDialogueBegin(m_dialogue);
     }
 
+    public void StartDialogueWithInitialVariables(VariableAssignmentsController variableAssignmentsController)
+    {
+        if (m_currentDialogueController != null)
+        {
+            Debug.LogWarning("There is a dialogue in progress", m_currentDialogueController);
+            return;
+        }
+        List<VariableAssignment> variableAssignments = variableAssignmentsController.GetVariableAssignments();
+        m_currentDialogueController = this;
+        m_dialogue.InitializeVariableValues();
+        m_dialogue.ApplyVariableValues(variableAssignments);
+        EmitDialogueBegin(m_dialogue);
+    }
+
     // TODO: Initialize a DialogueNode field with dialogue.beginText.
     // TODO: Handle onDialogueTextBegin and onDialogueTextEnd correctly.
     //       Add method StartText and EndText to emit text begin and end events.
