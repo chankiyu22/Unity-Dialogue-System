@@ -31,6 +31,11 @@ public class PlotController : MonoBehaviour
 
     public event EventHandler<AvatarTextureSourceEventArgs> OnAvatarTextureSource;
 
+    [SerializeField]
+    private PlotAdditionalDataListUnityEvent m_OnPlotAdditionalDataList = null;
+
+    public event EventHandler<PlotAdditionalDataListEventArgs> OnPlotAdditionalDataList;
+
     void Awake()
     {
         m_map.Clear();
@@ -48,6 +53,7 @@ public class PlotController : MonoBehaviour
             EmitDialogueText(plotItem.dialogueText);
             EmitCharacter(plotItem.character);
             EmitAvatarTextureSource(plotItem.avatarTextureSource);
+            EmitPlotAdditionalDataList(plotItem.additionalDataList);
         }
     }
 
@@ -80,6 +86,17 @@ public class PlotController : MonoBehaviour
         {
             OnAvatarTextureSource.Invoke(this, new AvatarTextureSourceEventArgs() {
                 avatarTextureSource = avatarTextureSource
+            });
+        }
+    }
+
+    void EmitPlotAdditionalDataList(List<PlotAdditionalData> additionalDataList)
+    {
+        m_OnPlotAdditionalDataList.Invoke(additionalDataList);
+        if (OnPlotAdditionalDataList != null)
+        {
+            OnPlotAdditionalDataList.Invoke(this, new PlotAdditionalDataListEventArgs() {
+                additionalDataList = additionalDataList
             });
         }
     }
