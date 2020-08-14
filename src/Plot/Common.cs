@@ -18,6 +18,9 @@ public class UnityBoolEvent : UnityEvent<bool> {}
 public class UnityStringEvent : UnityEvent<string> {}
 
 [Serializable]
+public class UnityVoidEvent : UnityEvent {}
+
+[Serializable]
 public class PlotAdditionalDataListUnityEvent : UnityEvent<List<PlotAdditionalData>> {}
 
 public class PlotAdditionalDataListEventArgs : EventArgs

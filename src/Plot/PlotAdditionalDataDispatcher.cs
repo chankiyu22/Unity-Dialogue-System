@@ -31,6 +31,9 @@ public class PlotAdditionalDataKeyUnityEvent
     [SerializeField]
     private UnityStringEvent m_stringEvent = null;
 
+    [SerializeField]
+    private UnityVoidEvent m_voidEvent = null;
+
     public void Dispatch(int intValue)
     {
         m_intEvent.Invoke(intValue);
@@ -49,6 +52,11 @@ public class PlotAdditionalDataKeyUnityEvent
     public void Dispatch(string stringValue)
     {
         m_stringEvent.Invoke(stringValue);
+    }
+
+    public void Dispatch()
+    {
+        m_voidEvent.Invoke();
     }
 }
 
@@ -88,6 +96,9 @@ public class PlotAdditionalDataDispatcher : MonoBehaviour
                         break;
                     case DataKeyType.STRING:
                         e.Dispatch(data.stringValue);
+                        break;
+                    case DataKeyType.VOID:
+                        e.Dispatch();
                         break;
                     default:
                         break;

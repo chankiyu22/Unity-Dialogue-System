@@ -19,6 +19,7 @@ public class PlotAdditionalDataKeyUnityEventPropertyDrawer : PropertyDrawer
         SerializedProperty floatEventProp = property.FindPropertyRelative("m_floatEvent");
         SerializedProperty boolEventProp = property.FindPropertyRelative("m_boolEvent");
         SerializedProperty stringEventProp = property.FindPropertyRelative("m_stringEvent");
+        SerializedProperty voidEventProp = property.FindPropertyRelative("m_voidEvent");
 
         Rect dataKeyRect = new Rect(position.x, position.y, position.width, EditorGUI.GetPropertyHeight(dataKeyProp));
         EditorGUI.PropertyField(dataKeyRect, dataKeyProp, GUIContent.none);
@@ -47,6 +48,10 @@ public class PlotAdditionalDataKeyUnityEventPropertyDrawer : PropertyDrawer
                     Rect stringEventRect = new Rect(position.x, position.y, position.width, EditorGUI.GetPropertyHeight(stringEventProp));
                     EditorGUI.PropertyField(stringEventRect, stringEventProp);
                     break;
+                case DataKeyType.VOID:
+                    Rect voidEventRect = new Rect(position.x, position.y, position.width, EditorGUI.GetPropertyHeight(voidEventProp));
+                    EditorGUI.PropertyField(voidEventRect, voidEventProp);
+                    break;
             }
         }
 
@@ -61,6 +66,7 @@ public class PlotAdditionalDataKeyUnityEventPropertyDrawer : PropertyDrawer
         SerializedProperty floatEventProp = property.FindPropertyRelative("m_floatEvent");
         SerializedProperty boolEventProp = property.FindPropertyRelative("m_boolEvent");
         SerializedProperty stringEventProp = property.FindPropertyRelative("m_stringEvent");
+        SerializedProperty voidEventProp = property.FindPropertyRelative("m_voidEvent");
 
         float result = EditorGUI.GetPropertyHeight(dataKeyProp);
 
@@ -85,6 +91,9 @@ public class PlotAdditionalDataKeyUnityEventPropertyDrawer : PropertyDrawer
                 break;
             case DataKeyType.STRING:
                 result += EditorGUI.GetPropertyHeight(stringEventProp);
+                break;
+            case DataKeyType.VOID:
+                result += EditorGUI.GetPropertyHeight(voidEventProp);
                 break;
         }
 

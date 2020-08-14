@@ -9,6 +9,7 @@ public enum DataKeyType
     FLOAT,
     BOOLEAN,
     STRING,
+    VOID,
 }
 
 public abstract class PlotAdditionalDataKey : ScriptableObject
@@ -34,6 +35,10 @@ public abstract class PlotAdditionalDataKey : ScriptableObject
             case DataKeyType.STRING:
             {
                 return "String";
+            }
+            case DataKeyType.VOID:
+            {
+                return "Void";
             }
             default:
             {
