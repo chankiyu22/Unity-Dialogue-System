@@ -1,8 +1,12 @@
 {
-    "name": "DialogueSystem",
-    "references": [],
+    "name": "Chankiyu22.DialogueSystem.Plots.Editor",
+    "references": [
+        "DialogueSystem"
+    ],
     "optionalUnityReferences": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

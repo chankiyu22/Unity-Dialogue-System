@@ -1,8 +1,12 @@
 {
-    "name": "Character",
-    "references": [],
+    "name": "Chankiyu22.DialogueSystem.Characters.Editor",
+    "references": [
+        "DialogueSystem"
+    ],
     "optionalUnityReferences": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
