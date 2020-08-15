@@ -34,32 +34,32 @@ public class DialogueController : MonoBehaviour
     }
 
     [SerializeField]
-    private DialogueUnityEvent m_OnDialogueBegin = null;
+    private DialogueUnityEvent m_OnDialogueBegin = new DialogueUnityEvent();
 
     public event EventHandler<DialogueEventArgs> OnDialogueBegin;
 
     [SerializeField]
-    private DialogueUnityEvent m_OnDialogueEnd = null;
+    private DialogueUnityEvent m_OnDialogueEnd = new DialogueUnityEvent();
 
     public event EventHandler<DialogueEventArgs> OnDialogueEnd;
 
     [SerializeField]
-    private DialogueTextUnityEvent m_OnDialogueTextBegin = null;
+    private DialogueTextUnityEvent m_OnDialogueTextBegin = new DialogueTextUnityEvent();
 
     public event EventHandler<DialogueTextEventArgs> OnDialogueTextBegin;
 
     [SerializeField]
-    private DialogueTextUnityEvent m_OnDialogueTextEnd = null;
+    private DialogueTextUnityEvent m_OnDialogueTextEnd = new DialogueTextUnityEvent();
 
     public event EventHandler<DialogueTextEventArgs> OnDialogueTextEnd;
 
     [SerializeField]
-    private DialogueOptionsUnityEvent m_OnDialogueOptionsBegin = null;
+    private DialogueOptionsUnityEvent m_OnDialogueOptionsBegin = new DialogueOptionsUnityEvent();
 
     public event EventHandler<DialogueOptionsEventArgs> OnDialogueOptionsBegin;
 
     [SerializeField]
-    private DialogueOptionsUnityEvent m_OnDialogueOptionsEnd = null;
+    private DialogueOptionsUnityEvent m_OnDialogueOptionsEnd = new DialogueOptionsUnityEvent();
 
     public event EventHandler<DialogueOptionsEventArgs> OnDialogueOptionsEnd;
 
@@ -108,6 +108,7 @@ public class DialogueController : MonoBehaviour
         {
             Debug.LogWarning("No begin dialogue text found", this);
             EndDialogue();
+            return;
         }
         EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
