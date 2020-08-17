@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request: {}
+  push: { branches: [master] }
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        lfs: true
+    - uses: actions/cache@v1.1.0
+      with:
+        path: ./Library
+        key: Library
+        restore-keys: |
+          Library-
+    - uses: webbertakken/unity-test-runner@v1.4
+      id: tests
+      with:
+        unityVersion: 2018.3.0f2
+        testMode: editmode
+    - uses: actions/upload-artifact@v1
+      with:
+        name: Test results
+        path: ${{ steps.tests.outputs.artifactsPath }}
