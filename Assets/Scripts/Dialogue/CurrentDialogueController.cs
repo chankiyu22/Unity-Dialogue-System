@@ -42,6 +42,16 @@ public class CurrentDialogueController : MonoBehaviour
         }
         currentDialogueController.SelectOption(dialogueOption);
     }
+
+    public void End()
+    {
+        if (currentDialogueController == null)
+        {
+            Debug.LogWarning("No dialogue in progress", this);
+            return;
+        }
+        currentDialogueController.End();
+    }
 }
 
 }

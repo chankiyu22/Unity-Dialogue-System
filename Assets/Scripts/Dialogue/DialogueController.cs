@@ -157,6 +157,11 @@ public class DialogueController : MonoBehaviour
         }
     }
 
+    public void End()
+    {
+        EndDialogue();
+    }
+
     public void SelectOption(DialogueOption dialogueOption)
     {
         if (m_currentDialogueNode == null)
