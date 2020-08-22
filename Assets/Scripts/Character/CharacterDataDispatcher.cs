@@ -84,12 +84,63 @@ public class CharacterDataKeyEvent
     }
 }
 
+[Serializable]
+public class DefaultCharacterDataKeyEvent : CharacterDataKeyEvent
+{
+    [SerializeField]
+    private int m_defaultIntValue = 0;
+
+    public int defaultIntValue
+    {
+        get
+        {
+            return m_defaultIntValue;
+        }
+    }
+
+    [SerializeField]
+    private float m_defaultFloatValue = 0;
+
+    public float defaultFloatValue
+    {
+        get
+        {
+            return m_defaultFloatValue;
+        }
+    }
+
+    [SerializeField]
+    private bool m_defaultBoolValue = false;
+
+    public bool defaultBoolValue
+    {
+        get
+        {
+            return m_defaultBoolValue;
+        }
+    }
+
+    [SerializeField]
+    private string m_defaultStringValue = null;
+
+    public string defaultStringValue
+    {
+        get
+        {
+            return m_defaultStringValue;
+        }
+    }
+}
+
 public class CharacterDataDispatcher : MonoBehaviour
 {
     [SerializeField]
     private List<CharacterDataKeyEvent> m_characterDataKeyEventList = new List<CharacterDataKeyEvent>();
 
     private Dictionary<CharacterDataKey, CharacterDataKeyEvent> m_characterDataKeyEventMap = new Dictionary<CharacterDataKey, CharacterDataKeyEvent>();
+
+    [SerializeField]
+    private List<DefaultCharacterDataKeyEvent> m_defaultCharacterDataKeyEventList = new List<DefaultCharacterDataKeyEvent>();
 
     void Awake()
     {
@@ -101,7 +152,19 @@ public class CharacterDataDispatcher : MonoBehaviour
 
     public void Dispatch(Character character)
     {
-        foreach (CharacterData data in character.dataList)
+        if (character != null)
+        {
+            DispatchCharacterDataList(character.dataList);
+        }
+        else
+        {
+            DispatchDefaultCharacterDataList();
+        }
+    }
+
+    void DispatchCharacterDataList(List<CharacterData> characterDataList)
+    {
+        foreach (CharacterData data in characterDataList)
         {
             CharacterDataKey dataKey = data.dataKey;
             if (m_characterDataKeyEventMap.ContainsKey(dataKey))
@@ -133,6 +196,41 @@ public class CharacterDataDispatcher : MonoBehaviour
                     {
                         break;
                     }
+                }
+            }
+        }
+    }
+
+    void DispatchDefaultCharacterDataList()
+    {
+        foreach (DefaultCharacterDataKeyEvent e in m_defaultCharacterDataKeyEventList)
+        {
+            CharacterDataKey dataKey = e.dataKey;
+            switch (dataKey.GetKeyType())
+            {
+                case DataKeyType.INTEGER:
+                {
+                    e.Dispatch(e.defaultIntValue);
+                    break;
+                }
+                case DataKeyType.FLOAT:
+                {
+                    e.Dispatch(e.defaultFloatValue);
+                    break;
+                }
+                case DataKeyType.BOOLEAN:
+                {
+                    e.Dispatch(e.defaultBoolValue);
+                    break;
+                }
+                case DataKeyType.STRING:
+                {
+                    e.Dispatch(e.defaultStringValue);
+                    break;
+                }
+                default:
+                {
+                    break;
                 }
             }
         }
