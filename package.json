@@ -12,10 +12,12 @@
     "files": [
         "/package.json",
         "/package.json.meta",
-        "/src",
-        "/src.meta",
-        "/src/DialogueSystem.asmdef",
-        "/src/DialogueSystem.asmdef.meta"
+        "/Assets",
+        "/Assets.meta",
+        "/Assets/Scripts",
+        "/Assets/Scripts.meta",
+        "/Assets/Scripts/DialogueSystem.asmdef",
+        "/Assets/Scripts/DialogueSystem.asmdef.meta"
     ],
     "author": {
         "name": "chankiyu22",
