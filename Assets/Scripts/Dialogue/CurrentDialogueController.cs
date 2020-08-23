@@ -13,16 +13,6 @@ public class CurrentDialogueController : MonoBehaviour
         }
     }
 
-    public void StartText()
-    {
-        if (currentDialogueController == null)
-        {
-            Debug.LogWarning("No dialogue in progress", this);
-            return;
-        }
-        currentDialogueController.StartText();
-    }
-
     public void ProceedNext()
     {
         if (currentDialogueController == null)

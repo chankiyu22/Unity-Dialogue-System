@@ -217,7 +217,7 @@ public class TestDialogueOption
         Assert.AreEqual(m_currentDialogue, m_dialogue);
 
         // begin text
-        m_dialogueController.StartText();
+        m_dialogueController.Next();
         Assert.AreEqual(m_currentDialogueText, "Begin Text");
 
         m_dialogueController.Next();
@@ -258,7 +258,7 @@ public class TestDialogueOption
         Assert.AreEqual(m_currentDialogue, m_dialogue);
 
         // begin text
-        m_dialogueController.StartText();
+        m_dialogueController.Next();
         Assert.AreEqual(m_currentDialogueText, "Begin Text");
 
         m_dialogueController.Next();
@@ -296,7 +296,7 @@ public class TestDialogueOption
         Assert.AreEqual(m_currentDialogue, m_dialogue);
 
         // begin text
-        m_dialogueController.StartText();
+        m_dialogueController.Next();
         Assert.AreEqual(m_currentDialogueText, "Begin Text");
 
         m_dialogueController.Next();

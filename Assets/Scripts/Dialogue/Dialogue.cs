@@ -53,98 +53,58 @@ public class Dialogue : ScriptableObject
         }
     }
 
-    private Dictionary<Variable, VariableValue> m_variableValues = new Dictionary<Variable, VariableValue>();
-
-    public Dictionary<Variable, VariableValue> variableValues
+    public DialogueNode GetBeginNode(Dictionary<Variable, VariableValue> variableValueMap)
     {
-        get
+        Dictionary<DialogueText, DialogueNode> dialogueTextNodeMap = new Dictionary<DialogueText, DialogueNode>();
+        foreach (DialogueNode dialogueNode in m_dialogueNodes)
         {
-            return m_variableValues;
+            dialogueTextNodeMap.Add(dialogueNode.dialogueText, dialogueNode);
         }
-    }
 
-    public void InitializeVariableValues()
-    {
-        m_variableValues.Clear();
-        ApplyVariableValues(m_dialogueVariables);
-    }
-
-    public DialogueText GetBeginText()
-    {
         foreach (DialogueNodeNext dialogueNodeNext in m_beginTexts)
         {
-            if (dialogueNodeNext.EvaluateCondition(variableValues))
+            if (dialogueNodeNext.EvaluateCondition(variableValueMap))
             {
-                return dialogueNodeNext.next;
+                if (dialogueNodeNext.next != null && dialogueTextNodeMap.ContainsKey(dialogueNodeNext.next))
+                {
+                    return dialogueTextNodeMap[dialogueNodeNext.next];
+                }
+                return null;
             }
         }
-        return m_finalBeginText;
+
+        if (m_finalBeginText != null && dialogueTextNodeMap.ContainsKey(m_finalBeginText))
+        {
+            return dialogueTextNodeMap[m_finalBeginText];
+        }
+        return null;
     }
 
-    public void ApplyVariableValues(List<VariableAssignment> assignments)
+    public DialogueNode GetNextDialogueNode(DialogueNode currentDialogueNode, Dictionary<Variable, VariableValue> variableValueMap)
     {
-        foreach (VariableAssignment assignment in assignments)
+        Dictionary<DialogueText, DialogueNode> dialogueTextNodeMap = new Dictionary<DialogueText, DialogueNode>();
+        foreach (DialogueNode dialogueNode in m_dialogueNodes)
         {
-            Variable variable = assignment.variable;
-            if (!m_variableValues.ContainsKey(variable))
-            {
-                AddVariableValue(assignment);
-                continue;
-            }
-            VariableValue variableValue = m_variableValues[variable];
-            switch (variable.GetVariableType())
-            {
-                case VariableType.INTEGER:
-                {
-                    variableValue.SetValue(assignment.intValue);
-                    break;
-                }
-                case VariableType.FLOAT:
-                {
-                    variableValue.SetValue(assignment.floatValue);
-                    break;
-                }
-                case VariableType.BOOLEAN:
-                {
-                    variableValue.SetValue(assignment.boolValue);
-                    break;
-                }
-                case VariableType.STRING:
-                {
-                    variableValue.SetValue(assignment.stringValue);
-                    break;
-                }
-            }
+            dialogueTextNodeMap.Add(dialogueNode.dialogueText, dialogueNode);
         }
-    }
 
-    void AddVariableValue(VariableAssignment variableAssignment)
-    {
-        Variable variable = variableAssignment.variable;
-        switch (variable.GetVariableType())
+        foreach (DialogueNodeNext dialogueNodeNext in currentDialogueNode.nexts)
         {
-            case VariableType.INTEGER:
+            if (dialogueNodeNext.EvaluateCondition(variableValueMap))
             {
-                m_variableValues.Add(variable, new VariableValue((IntVariable) variable, variableAssignment.intValue));
-                break;
-            }
-            case VariableType.FLOAT:
-            {
-                m_variableValues.Add(variable, new VariableValue((FloatVariable) variable, variableAssignment.floatValue));
-                break;
-            }
-            case VariableType.BOOLEAN:
-            {
-                m_variableValues.Add(variable, new VariableValue((BoolVariable) variable, variableAssignment.boolValue));
-                break;
-            }
-            case VariableType.STRING:
-            {
-                m_variableValues.Add(variable, new VariableValue((StringVariable) variable, variableAssignment.stringValue));
-                break;
+                if (dialogueNodeNext.next != null && dialogueTextNodeMap.ContainsKey(dialogueNodeNext.next))
+                {
+                    return dialogueTextNodeMap[dialogueNodeNext.next];
+                }
+                return null;
             }
         }
 
+        if (currentDialogueNode.finalNext != null && dialogueTextNodeMap.ContainsKey(currentDialogueNode.finalNext))
+        {
+            return dialogueTextNodeMap[currentDialogueNode.finalNext];
+        }
+        return null;
     }
 
     public (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialoguedTexts) GetUnreferencedDialoguedTextAndUnusedNodes()

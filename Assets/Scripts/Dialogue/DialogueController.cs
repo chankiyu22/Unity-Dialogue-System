@@ -33,6 +33,8 @@ public class DialogueController : MonoBehaviour
         }
     }
 
+    private Dictionary<Variable, VariableValue> m_variableValues = new Dictionary<Variable, VariableValue>();
+
     [SerializeField]
     private DialogueUnityEvent m_OnDialogueBegin = new DialogueUnityEvent();
 
@@ -73,7 +75,8 @@ public class DialogueController : MonoBehaviour
             return;
         }
         m_currentDialogueController = this;
-        m_dialogue.InitializeVariableValues();
+        m_variableValues.Clear();
+        ApplyVariableValues(m_dialogue.dialogueVariables);
         EmitDialogueBegin(m_dialogue);
     }
 
@@ -86,39 +89,29 @@ public class DialogueController : MonoBehaviour
         }
         List<VariableAssignment> variableAssignments = variableAssignmentsController.GetVariableAssignments();
         m_currentDialogueController = this;
-        m_dialogue.InitializeVariableValues();
-        m_dialogue.ApplyVariableValues(variableAssignments);
+        m_variableValues.Clear();
+        ApplyVariableValues(m_dialogue.dialogueVariables);
+        ApplyVariableValues(variableAssignments);
         EmitDialogueBegin(m_dialogue);
-    }
-
-    // TODO: Initialize a DialogueNode field with dialogue.beginText.
-    // TODO: Handle onDialogueTextBegin and onDialogueTextEnd correctly.
-    //       Add method StartText and EndText to emit text begin and end events.
-    public void StartText()
-    {
-        DialogueText beginText = m_dialogue.GetBeginText();
-        if (beginText == null)
-        {
-            Debug.LogWarning("No begin dialogue text found", this);
-            EndDialogue();
-            return;
-        }
-        m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == beginText);
-        if (m_currentDialogueNode == null)
-        {
-            Debug.LogWarning("No begin dialogue text found", this);
-            EndDialogue();
-            return;
-        }
-        EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
 
     public void Next()
     {
-        if (m_currentDialogueNode != null)
+        if (m_currentDialogueNode == null)
+        {
+            m_currentDialogueNode = m_dialogue.GetBeginNode(m_variableValues);
+            if (m_currentDialogueNode == null)
+            {
+                Debug.LogWarning("No begin dialogue node found", this);
+                EndDialogue();
+                return;
+            }
+            EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
+        }
+        else
         {
             EmitDialogueTextEnd(m_currentDialogueNode.dialogueText);
-            m_dialogue.ApplyVariableValues(m_currentDialogueNode.assignments);
+            ApplyVariableValues(m_currentDialogueNode.assignments);
             if (m_currentDialogueNode.options.Count > 0)
             {
                 List<DialogueOption> dialogueOptions = m_currentDialogueNode.options;
@@ -134,24 +127,15 @@ public class DialogueController : MonoBehaviour
             }
             else
             {
-                DialogueText nextDialogueText = m_currentDialogueNode.GetNextDialogueText(m_dialogue.variableValues);
-                if (nextDialogueText == null)
+                m_currentDialogueNode = m_dialogue.GetNextDialogueNode(m_currentDialogueNode, m_variableValues);
+                if (m_currentDialogueNode == null)
                 {
-                    Debug.LogWarning("No next dialogue text evaluated valid", this);
+                    Debug.LogWarning("No next dialogue node found", this);
                     EndDialogue();
                 }
                 else
                 {
-                    m_currentDialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == nextDialogueText);
-                    if (m_currentDialogueNode == null)
-                    {
-                        Debug.LogWarning("Next is dialogue text but no dialogue text found", this);
-                        EndDialogue();
-                    }
-                    else
-                    {
-                        EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
-                    }
+                    EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
                 }
             }
         }
@@ -187,24 +171,16 @@ public class DialogueController : MonoBehaviour
         }
 
         EmitDialogueOptionsEnd(dialogueOptions);
-        m_dialogue.ApplyVariableValues(selectedOption.assignments);
+        ApplyVariableValues(selectedOption.assignments);
 
-        DialogueText nextDialogueText = m_currentDialogueNode.GetNextDialogueText(m_dialogue.variableValues);
-        if (nextDialogueText == null)
+        m_currentDialogueNode = m_dialogue.GetNextDialogueNode(m_currentDialogueNode, m_variableValues);
+        if (m_currentDialogueNode == null)
         {
-            Debug.LogWarning("No next dialogue text evaluated valid", this);
+            Debug.LogWarning("No dialogue node found", this);
             EndDialogue();
-        }
-
-        DialogueNode dialogueNode = m_dialogue.dialogueNodes.Find((DialogueNode d) => d.dialogueText == nextDialogueText);
-
-        if (dialogueNode == null)
-        {
-            Debug.LogWarning("Next option is not found", this);
             return;
         }
 
-        m_currentDialogueNode = dialogueNode;
         EmitDialogueTextBegin(m_currentDialogueNode.dialogueText);
     }
 
@@ -212,6 +188,71 @@ public class DialogueController : MonoBehaviour
     {
         EmitDialogueEnd(m_dialogue);
         m_currentDialogueController = null;
+    }
+
+    public void ApplyVariableValues(List<VariableAssignment> assignments)
+    {
+        foreach (VariableAssignment assignment in assignments)
+        {
+            Variable variable = assignment.variable;
+            if (!m_variableValues.ContainsKey(variable))
+            {
+                AddVariableValue(assignment);
+                continue;
+            }
+            VariableValue variableValue = m_variableValues[variable];
+            switch (variable.GetVariableType())
+            {
+                case VariableType.INTEGER:
+                {
+                    variableValue.SetValue(assignment.intValue);
+                    break;
+                }
+                case VariableType.FLOAT:
+                {
+                    variableValue.SetValue(assignment.floatValue);
+                    break;
+                }
+                case VariableType.BOOLEAN:
+                {
+                    variableValue.SetValue(assignment.boolValue);
+                    break;
+                }
+                case VariableType.STRING:
+                {
+                    variableValue.SetValue(assignment.stringValue);
+                    break;
+                }
+            }
+        }
+    }
+
+    void AddVariableValue(VariableAssignment variableAssignment)
+    {
+        Variable variable = variableAssignment.variable;
+        switch (variable.GetVariableType())
+        {
+            case VariableType.INTEGER:
+            {
+                m_variableValues.Add(variable, new VariableValue((IntVariable) variable, variableAssignment.intValue));
+                break;
+            }
+            case VariableType.FLOAT:
+            {
+                m_variableValues.Add(variable, new VariableValue((FloatVariable) variable, variableAssignment.floatValue));
+                break;
+            }
+            case VariableType.BOOLEAN:
+            {
+                m_variableValues.Add(variable, new VariableValue((BoolVariable) variable, variableAssignment.boolValue));
+                break;
+            }
+            case VariableType.STRING:
+            {
+                m_variableValues.Add(variable, new VariableValue((StringVariable) variable, variableAssignment.stringValue));
+                break;
+            }
+        }
     }
 
     void EmitDialogueBegin(Dialogue dialogue)
