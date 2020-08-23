@@ -1,7 +1,7 @@
 {
     "name": "Chankiyu22.DialogueSystem.Tests",
     "references": [
-        "DialogueSystem"
+        "Chankiyu22.DialogueSystem"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

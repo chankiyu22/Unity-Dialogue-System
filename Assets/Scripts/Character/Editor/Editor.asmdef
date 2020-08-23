@@ -1,7 +1,7 @@
 {
     "name": "Chankiyu22.DialogueSystem.Characters.Editor",
     "references": [
-        "DialogueSystem"
+        "Chankiyu22.DialogueSystem"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [
