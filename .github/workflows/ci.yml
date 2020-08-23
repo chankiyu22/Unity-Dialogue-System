@@ -23,12 +23,17 @@ jobs:
         key: Library
         restore-keys: |
           Library-
-    - uses: webbertakken/unity-test-runner@v1.4
+    - uses: chankiyu22/unity-test-runner@v1.6-chankiyu22-dev
       id: tests
       with:
         unityVersion: 2018.3.0f2
         testMode: editmode
     - uses: actions/upload-artifact@v1
+      if: ${{ success() || failure() }}
       with:
         name: Test results
+        path: ${{ steps.tests.outputs.artifactsPath }}
+    - uses: chankiyu22/unity-test-result-pretty-print@v0.0.1
+      if: ${{ success() || failure() }}
+      with:
         path: ${{ steps.tests.outputs.artifactsPath }}
