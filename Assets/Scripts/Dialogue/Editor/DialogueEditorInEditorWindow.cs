@@ -74,7 +74,7 @@ public class DialogueEditorInEditorWindow
         serializedObject.Update();
 
         Dialogue dialogue = (Dialogue) serializedObject.targetObject;
-        (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialogueTexts) = dialogue.GetUnreferencedDialoguedTextAndUnusedNodes();
+        (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialogueTexts) = Utils.GetUnreferencedDialogueTextAndUnusedNodes(dialogue);
         m_undefinedDialogueTexts = undefinedDialogueTexts;
         m_unusedDialogueTexts = unusedDialogueTexts;
 

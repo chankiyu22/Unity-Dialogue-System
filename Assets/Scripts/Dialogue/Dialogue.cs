@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -105,69 +103,6 @@ public class Dialogue : ScriptableObject
             return dialogueTextNodeMap[currentDialogueNode.finalNext];
         }
         return null;
-    }
-
-    public (List<DialogueText> undefinedDialogueTexts, List<DialogueText> unusedDialoguedTexts) GetUnreferencedDialoguedTextAndUnusedNodes()
-    {
-        List<DialogueText> dialogueTextsFromNode = new List<DialogueText>();
-        List<DialogueText> dialogueTextsFromBeginText = new List<DialogueText>();
-        List<DialogueText> dialogueTextsFromNextText = new List<DialogueText>();
-        List<DialogueText> dialogueTextsFromOptionNextText =new List<DialogueText>();
-
-        foreach (DialogueNodeNext beginTextNext in m_beginTexts)
-        {
-            if (beginTextNext.next != null)
-            {
-                dialogueTextsFromBeginText.Add(beginTextNext.next);
-            }
-        }
-
-        if (m_finalBeginText != null)
-        {
-            dialogueTextsFromBeginText.Add(m_finalBeginText);
-        }
-
-        foreach (DialogueNode dialogueNode in dialogueNodes)
-        {
-            if (dialogueNode.dialogueText != null)
-            {
-                dialogueTextsFromNode.Add(dialogueNode.dialogueText);
-            }
-
-            foreach (DialogueNodeNext dialogueNodeNext in dialogueNode.nexts)
-            {
-                if (dialogueNodeNext.next != null)
-                {
-                    dialogueTextsFromNextText.Add(dialogueNodeNext.next);
-                }
-            }
-
-            if (dialogueNode.finalNext != null)
-            {
-                dialogueTextsFromNextText.Add(dialogueNode.finalNext);
-            }
-        }
-
-        IEnumerable<DialogueText> declaredDialogueTexts = dialogueTextsFromBeginText
-            .Concat(dialogueTextsFromNextText)
-            .Concat(dialogueTextsFromOptionNextText);
-
-        List<DialogueText> undefinedDialogueTexts = declaredDialogueTexts.Except(dialogueTextsFromNode).ToList();
-
-        IEnumerable<DialogueNode> unusedDialoguedNodes = dialogueNodes
-            .Where((DialogueNode d) => declaredDialogueTexts.Where((DialogueText t) => t == d.dialogueText).Count() == 0);
-
-        List<DialogueText> unusedDialoguedTexts = new List<DialogueText>();
-
-        foreach (DialogueNode dialogueNode in unusedDialoguedNodes)
-        {
-            if (dialogueNode.dialogueText != null)
-            {
-                unusedDialoguedTexts.Add(dialogueNode.dialogueText);
-            }
-        }
-
-        return (undefinedDialogueTexts, unusedDialoguedTexts);
     }
 
     public List<DialogueText> GetDialogueTexts()
