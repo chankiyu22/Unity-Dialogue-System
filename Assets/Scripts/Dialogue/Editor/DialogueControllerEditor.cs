@@ -17,6 +17,15 @@ public class DialogueControllerEditor : Editor
 
         EditorGUILayout.Space();
 
+        SerializedProperty dialogueHandlersProp = serializedObject.FindProperty("m_dialogueHandlers");
+        EditorGUILayout.PropertyField(dialogueHandlersProp, true);
+
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField("Events", EditorStyles.boldLabel);
+
+        EditorGUILayout.Space();
+
         SerializedProperty onDialogueBeginProp = serializedObject.FindProperty("m_OnDialogueBegin");
         EditorGUILayout.PropertyField(onDialogueBeginProp);
         SerializedProperty OnDialogueEndProp = serializedObject.FindProperty("m_OnDialogueEnd");
@@ -35,8 +44,6 @@ public class DialogueControllerEditor : Editor
         EditorGUILayout.PropertyField(OnDialogueOptionsBeginProp);
         SerializedProperty OnDialogueOptionsEndProp = serializedObject.FindProperty("m_OnDialogueOptionsEnd");
         EditorGUILayout.PropertyField(OnDialogueOptionsEndProp);
-
-        EditorGUILayout.Space();
 
         serializedObject.ApplyModifiedProperties();
     }

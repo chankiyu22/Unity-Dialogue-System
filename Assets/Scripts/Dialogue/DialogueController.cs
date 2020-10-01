@@ -67,6 +67,9 @@ public class DialogueController : MonoBehaviour
 
     private DialogueNode m_currentDialogueNode = null;
 
+    [SerializeField]
+    private List<DialogueHandler> m_dialogueHandlers = new List<DialogueHandler>();
+
     public void StartDialogue()
     {
         if (m_currentDialogueController != null)
@@ -265,6 +268,11 @@ public class DialogueController : MonoBehaviour
                 dialogue = dialogue
             });
         }
+
+        foreach (DialogueHandler dialogueHandler in m_dialogueHandlers)
+        {
+            dialogueHandler.HandleDialogueBegin(dialogue);
+        }
     }
 
     void EmitDialogueEnd(Dialogue dialogue)
@@ -276,6 +284,11 @@ public class DialogueController : MonoBehaviour
             OnDialogueEnd.Invoke(this, new DialogueEventArgs() {
                 dialogue = dialogue
             });
+        }
+
+        foreach (DialogueHandler dialogueHandler in m_dialogueHandlers)
+        {
+            dialogueHandler.HandleDialogueEnd(dialogue);
         }
     }
 
@@ -289,6 +302,11 @@ public class DialogueController : MonoBehaviour
                 dialogueText = dialogueText
             });
         }
+
+        foreach (DialogueHandler dialogueHandler in m_dialogueHandlers)
+        {
+            dialogueHandler.HandleDialogueTextBegin(dialogueText);
+        }
     }
 
     void EmitDialogueTextEnd(DialogueText dialogueText)
@@ -300,6 +318,11 @@ public class DialogueController : MonoBehaviour
             OnDialogueTextEnd.Invoke(this, new DialogueTextEventArgs() {
                 dialogueText = dialogueText
             });
+        }
+
+        foreach (DialogueHandler dialogueHandler in m_dialogueHandlers)
+        {
+            dialogueHandler.HandleDialogueTextEnd(dialogueText);
         }
     }
 
@@ -313,6 +336,11 @@ public class DialogueController : MonoBehaviour
                 dialogueOptions = dialogueOptions
             });
         }
+
+        foreach (DialogueHandler dialogueHandler in m_dialogueHandlers)
+        {
+            dialogueHandler.HandleDialogueOptionsBegin(dialogueOptions);
+        }
     }
 
     void EmitDialogueOptionsEnd(List<DialogueOption> dialogueOptions)
@@ -324,6 +352,11 @@ public class DialogueController : MonoBehaviour
             OnDialogueOptionsEnd.Invoke(this, new DialogueOptionsEventArgs() {
                 dialogueOptions = dialogueOptions
             });
+        }
+
+        foreach (DialogueHandler dialogueHandler in m_dialogueHandlers)
+        {
+            dialogueHandler.HandleDialogueOptionsEnd(dialogueOptions);
         }
     }
 }

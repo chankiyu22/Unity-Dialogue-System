@@ -9,7 +9,7 @@ using Chankiyu22.DialogueSystem.Avatars;
 namespace Chankiyu22.DialogueSystem.Plots
 {
 
-public class PlotController : MonoBehaviour
+public class PlotController : DialogueHandler
 {
     [SerializeField]
     private Plot m_plot = null;
@@ -45,7 +45,7 @@ public class PlotController : MonoBehaviour
         }
     }
 
-    public void Dispatch(DialogueText dialogueText)
+    void Dispatch(DialogueText dialogueText)
     {
         if (m_map.ContainsKey(dialogueText))
         {
@@ -55,6 +55,13 @@ public class PlotController : MonoBehaviour
             EmitAvatarTextureSource(plotItem.avatarTextureSource);
             EmitPlotAdditionalDataList(plotItem.additionalDataList);
         }
+    }
+
+    public override void HandleDialogueTextBegin(DialogueText dialogueText)
+    {
+        base.HandleDialogueTextBegin(dialogueText);
+
+        Dispatch(dialogueText);
     }
 
     void EmitDialogueText(DialogueText dialogueText)
